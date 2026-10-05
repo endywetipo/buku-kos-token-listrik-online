@@ -1,0 +1,16 @@
+{
+  "name": "buku-kos-token-listrik-online",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Buku Kos & Token Listrik 7 pintu dengan Supabase",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "deploy": "vercel --prod"
+  },
+  "devDependencies": {
+    "vite": "latest",
+    "vercel": "latest"
+  }
+}
