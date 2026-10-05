@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📋 Buku Kos & Token Listrik</title>
+<style>*{box-sizing:border-box;margin:0;padding:0}body{color:#1a1a2e;background:#f0f4f8;max-width:800px;margin:0 auto;padding:10px;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif}.card{background:#fff;border-radius:16px;margin-bottom:12px;padding:18px;box-shadow:0 2px 8px #0000000f}.card-title{color:#1a1a2e;align-items:center;gap:8px;margin-bottom:14px;font-size:16px;font-weight:800;display:flex}.form-group{margin-bottom:12px}.form-group label{color:#555;margin-bottom:5px;font-size:12px;font-weight:700;display:block}.form-group input,.form-group select{color:#1a1a2e;background:#fff;border:2px solid #e2e8f0;border-radius:10px;width:100%;padding:11px 13px;font-size:15px;transition:border-color .2s}.form-group input:focus,.form-group select:focus{border-color:#3b82f6;outline:none}.btn{cursor:pointer;border:none;border-radius:10px;padding:11px 18px;font-size:14px;font-weight:700;transition:all .2s}.btn-primary{color:#fff;background:linear-gradient(135deg,#3b82f6,#2563eb)}.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 12px #3b82f64d}.btn-success{color:#fff;background:linear-gradient(135deg,#22c55e,#16a34a)}.btn-danger{color:#fff;background:linear-gradient(135deg,#ef4444,#dc2626)}.btn-warning{color:#111;background:linear-gradient(135deg,#f59e0b,#d97706)}.btn-info{color:#fff;background:linear-gradient(135deg,#06b6d4,#0891b2)}.btn-sm{padding:7px 12px;font-size:12px}.stats-grid{grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px;display:grid}@media (width>=600px){.stats-grid{grid-template-columns:repeat(4,1fr)}}.stat-box{text-align:center;color:#fff;border-radius:12px;padding:14px 8px}.stat-box.blue{background:linear-gradient(135deg,#3b82f6,#1d4ed8)}.stat-box.green{background:linear-gradient(135deg,#22c55e,#15803d)}.stat-box.orange{background:linear-gradient(135deg,#f59e0b,#d97706)}.stat-box.red{background:linear-gradient(135deg,#ef4444,#b91c1c)}.stat-box.purple{background:linear-gradient(135deg,#8b5cf6,#7c3aed)}.stat-box.teal{background:linear-gradient(135deg,#14b8a6,#0d9488)}.stat-value{font-size:18px;font-weight:800}.stat-label{opacity:.9;margin-top:3px;font-size:10px;font-weight:600}table{border-collapse:collapse;width:100%;font-size:13px}th,td{text-align:left;border-bottom:1px solid #e2e8f0;padding:8px 6px}th{color:#64748b;text-transform:uppercase;letter-spacing:.5px;font-size:10px;font-weight:700}.kamar-grid{grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px;display:grid}@media (width>=500px){.kamar-grid{grid-template-columns:repeat(7,1fr)}}.kamar-item{text-align:center;cursor:pointer;background:#fff;border:2px solid #e2e8f0;border-radius:10px;padding:10px 3px;transition:all .2s}.kamar-item.paid{background:#f0fdf4;border-color:#22c55e}.kamar-item.unpaid{background:#fef2f2;border-color:#ef4444}.kamar-item:hover{transform:translateY(-2px);box-shadow:0 4px 12px #0000001a}.kamar-num{font-size:18px;font-weight:800}.kamar-status{margin-top:2px;font-size:10px;font-weight:600}.kamar-amount{color:#2563eb;margin-top:1px;font-size:11px;font-weight:700}.actions{flex-wrap:wrap;gap:6px;margin-top:10px;display:flex}.empty-state{text-align:center;color:#94a3b8;padding:30px 15px}.empty-state .icon{margin-bottom:10px;font-size:40px}.toast{color:#fff;z-index:1000;text-align:center;background:#1e293b;border-radius:12px;max-width:90%;padding:12px 20px;font-size:13px;font-weight:600;animation:.3s slideUp;position:fixed;bottom:16px;left:50%;transform:translate(-50%);box-shadow:0 8px 24px #0003}@keyframes slideUp{0%{opacity:0;transform:translate(-50%)translateY(20px)}to{opacity:1;transform:translate(-50%)translateY(0)}}.copy-box{white-space:pre-wrap;word-break:break-all;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:10px;max-height:300px;margin-top:10px;padding:12px;font-family:SF Mono,monospace;font-size:12px;line-height:1.5;overflow-y:auto}.hidden{display:none}.form-row{grid-template-columns:1fr 1fr;gap:10px;display:grid}@media (width<=480px){.form-row{grid-template-columns:1fr}}.section-toggle{cursor:pointer;-webkit-user-select:none;user-select:none}.info-text{color:#64748b;margin-top:6px;font-size:11px;line-height:1.4}.highlight{background:#fef3c7;border-radius:4px;padding:2px 6px;font-weight:700}.rek-box{color:#fff;text-align:center;background:linear-gradient(135deg,#1e3a5f,#0f2744);border-radius:14px;margin-bottom:14px;padding:16px}.rek-box .bank{opacity:.8;letter-spacing:1px;font-size:12px}.rek-box .nomor{letter-spacing:2px;margin:8px 0;font-size:22px;font-weight:800}.rek-box .nama{opacity:.9;font-size:13px}.rek-box .info{opacity:.7;margin-top:8px;font-size:11px}.tabs{background:#e2e8f0;border-radius:12px;gap:4px;margin-bottom:12px;padding:4px;display:flex}.tab{cursor:pointer;color:#64748b;background:0 0;border:none;border-radius:10px;flex:1;padding:10px;font-size:13px;font-weight:700;transition:all .2s}.tab.active{color:#1a1a2e;background:#fff;box-shadow:0 2px 8px #00000014}.tab-content.hidden{display:none}.badge{border-radius:20px;padding:2px 8px;font-size:11px;font-weight:600;display:inline-block}.badge-paid{color:#166534;background:#dcfce7}.badge-unpaid{color:#991b1b;background:#fee2e2}.progress-bar{background:#e2e8f0;border-radius:3px;height:6px;margin-top:6px;overflow:hidden}.progress-fill{border-radius:3px;height:100%;transition:width .5s}.progress-fill.green{background:#22c55e}.progress-fill.orange{background:#f59e0b}.progress-fill.red{background:#ef4444}</style>
+<base target="_blank">
+</head>
+<body>
+<div id="online-status" style="background:#dcfce7;color:#166534;border-radius:10px;padding:8px 12px;margin-bottom:10px;text-align:center;font-size:12px;font-weight:700;">☁️ Mode Online — data dibagikan ke semua teman</div>
+
+<!-- REKENING -->
+<div class="rek-box">
+  <div class="bank">🏦 BANK BRI</div>
+  <div class="nomor" onclick="copyRek()" style="cursor:pointer;">7941 0101 9781 531</div>
+  <div class="nama">a.n. Kakak Keli</div>
+  <div class="info">💡 Klik nomor rekening untuk copy | Kos: Rp 300.000/bulan</div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('kos')">🏠 Pembayaran Kos</button>
+  <button class="tab" onclick="switchTab('token')">⚡ Token Listrik</button>
+</div>
+
+<!-- ==================== TAB KOS ==================== -->
+<div id="tab-kos" class="tab-content">
+
+  <!-- STATS KOS -->
+  <div class="card">
+    <div class="card-title">📊 Ringkasan Kos Bulan Ini</div>
+    <div class="stats-grid">
+      <div class="stat-box blue">
+        <div class="stat-value" id="kos-total">Rp 0</div>
+        <div class="stat-label">Total Terkumpul</div>
+      </div>
+      <div class="stat-box purple">
+        <div class="stat-value" id="kos-target">Rp 2,1jt</div>
+        <div class="stat-label">Target (7x300rb)</div>
+      </div>
+      <div class="stat-box green">
+        <div class="stat-value" id="kos-sudah">0</div>
+        <div class="stat-label">Sudah Bayar</div>
+      </div>
+      <div class="stat-box red">
+        <div class="stat-value" id="kos-belum">7</div>
+        <div class="stat-label">Belum Bayar</div>
+      </div>
+    </div>
+    <div style="margin-top:8px;">
+      <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:#64748b;">
+        <span>Progress</span>
+        <span id="kos-progress-text">0%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill green" id="kos-progress-bar" style="width:0%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATUS KAMAR KOS -->
+  <div class="card">
+    <div class="card-title section-toggle" onclick="toggleSection('kos-kamar-section')">🏠 Status Bayar Kos per Pintu</div>
+    <div id="kos-kamar-section">
+      <div class="kamar-grid" id="kos-kamar-grid"></div>
+      <p class="info-text">💡 Klik pintu untuk otomatis mengisi form pembayaran kos.</p>
+    </div>
+  </div>
+
+  <!-- FORM KOS -->
+  <div class="card">
+    <div class="card-title">📝 Catat Pembayaran Kos</div>
+    <form id="form-kos" onsubmit="return submitKos(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nama Penghuni</label>
+          <input type="text" id="kos-nama" placeholder="Contoh: Budi" required>
+        </div>
+        <div class="form-group">
+          <label>Nomor Kamar</label>
+          <select id="kos-kamar" required>
+            <option value="">Pilih kamar...</option>
+            <option value="1">Pintu 1</option>
+            <option value="2">Pintu 2</option>
+            <option value="3">Pintu 3</option>
+            <option value="4">Pintu 4</option>
+            <option value="5">Pintu 5</option>
+            <option value="6">Pintu 6</option>
+            <option value="7">Pintu 7</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Bulan</label>
+          <select id="kos-bulan" required>
+            <option value="">Pilih bulan...</option>
+            <option value="Januari">Januari</option>
+            <option value="Februari">Februari</option>
+            <option value="Maret">Maret</option>
+            <option value="April">April</option>
+            <option value="Mei">Mei</option>
+            <option value="Juni">Juni</option>
+            <option value="Juli">Juli</option>
+            <option value="Agustus">Agustus</option>
+            <option value="September">September</option>
+            <option value="Oktober">Oktober</option>
+            <option value="November">November</option>
+            <option value="Desember">Desember</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tanggal Bayar</label>
+          <input type="date" id="kos-tanggal" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Jumlah Bayar (Rp)</label>
+        <input type="number" id="kos-jumlah" value="300000" min="1000" step="1000" required>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;">✅ Simpan Pembayaran Kos</button>
+    </form>
+  </div>
+
+  <!-- RIWAYAT KOS -->
+  <div class="card">
+    <div class="card-title section-toggle" onclick="toggleSection('kos-riwayat-section')">📋 Riwayat Pembayaran Kos</div>
+    <div id="kos-riwayat-section">
+      <div id="kos-riwayat-table"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB TOKEN ==================== -->
+<div class="card" style="border:2px solid #14b8a6;">
+  <div class="card-title">⚡ Nomor Token Listrik Bersama</div>
+  <div style="font-size:26px;font-weight:800;letter-spacing:2px;text-align:center;padding:8px 0;"
+       onclick="copyTokenNumber()" title="Klik untuk menyalin">
+    56707933430
+  </div>
+  <div class="info-text" style="text-align:center;">Klik nomor token untuk menyalin.</div>
+</div>
+<div id="tab-token" class="tab-content hidden">
+
+  <!-- STATS TOKEN -->
+  <div class="card">
+    <div class="card-title">📊 Ringkasan Token Listrik</div>
+    <div class="stats-grid">
+      <div class="stat-box blue">
+        <div class="stat-value" id="token-total">Rp 0</div>
+        <div class="stat-label">Total Terkumpul</div>
+      </div>
+      <div class="stat-box teal">
+        <div class="stat-value" id="token-kwh">0</div>
+        <div class="stat-label">Estimasi kWh</div>
+      </div>
+      <div class="stat-box green">
+        <div class="stat-value" id="token-sudah">0</div>
+        <div class="stat-label">Sudah Isi</div>
+      </div>
+      <div class="stat-box red">
+        <div class="stat-value" id="token-belum">7</div>
+        <div class="stat-label">Belum Isi</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATUS KAMAR TOKEN -->
+  <div class="card">
+    <div class="card-title section-toggle" onclick="toggleSection('token-kamar-section')">⚡ Status Isi Token per Pintu</div>
+    <div id="token-kamar-section">
+      <div class="kamar-grid" id="token-kamar-grid"></div>
+      <p class="info-text">💡 Klik pintu untuk otomatis mengisi form token listrik.</p>
+    </div>
+  </div>
+
+  <!-- FORM TOKEN -->
+  <div class="card">
+    <div class="card-title">📝 Catat Pengisian Token</div>
+    <form id="form-token" onsubmit="return submitToken(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nama Penghuni</label>
+          <input type="text" id="token-nama" placeholder="Contoh: Budi" required>
+        </div>
+        <div class="form-group">
+          <label>Nomor Kamar</label>
+          <select id="token-kamar" required>
+            <option value="">Pilih kamar...</option>
+            <option value="1">Pintu 1</option>
+            <option value="2">Pintu 2</option>
+            <option value="3">Pintu 3</option>
+            <option value="4">Pintu 4</option>
+            <option value="5">Pintu 5</option>
+            <option value="6">Pintu 6</option>
+            <option value="7">Pintu 7</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Jumlah Isi (Rp)</label>
+          <input type="number" id="token-jumlah" placeholder="Contoh: 25000" min="1000" step="1000" required>
+        </div>
+        <div class="form-group">
+          <label>Tanggal</label>
+          <input type="date" id="token-tanggal" required>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;">✅ Simpan Pengisian Token</button>
+    </form>
+  </div>
+
+  <!-- RIWAYAT TOKEN -->
+  <div class="card">
+    <div class="card-title section-toggle" onclick="toggleSection('token-riwayat-section')">📋 Riwayat Pengisian Token</div>
+    <div id="token-riwayat-section">
+      <div id="token-riwayat-table"></div>
+    </div>
+  </div>
+</div>
+
+<!-- EXPORT / SHARE -->
+<div class="card">
+  <div class="card-title">📤 Export & Share ke Grup</div>
+  <div class="actions">
+    <button class="btn btn-success btn-sm" onclick="exportWhatsAppFull()">📱 Copy Lengkap (WA)</button>
+    <button class="btn btn-info btn-sm" onclick="exportWhatsAppKos()">🏠 Copy Kos Saja</button>
+    <button class="btn btn-warning btn-sm" onclick="exportWhatsAppToken()">⚡ Copy Token Saja</button>
+    <button class="btn btn-primary btn-sm" onclick="exportJSON()">💾 Export JSON</button>
+    <button class="btn btn-primary btn-sm" onclick="document.getElementById('import-file').click()">📁 Import JSON</button>
+    <input type="file" id="import-file" class="hidden" accept=".json" onchange="importJSON(event)">
+    <button class="btn btn-danger btn-sm" onclick="resetData()">🗑️ Reset Semua</button>
+  </div>
+  <div id="export-area" class="hidden">
+    <div class="copy-box" id="export-text"></div>
+    <button class="btn btn-primary btn-sm" style="margin-top:10px;" onclick="copyToClipboard()">📋 Copy ke Clipboard</button>
+  </div>
+</div>
+
+<div style="text-align:center; padding: 20px; color: #94a3b8; font-size: 11px;">
+  ☁️ Data tersimpan di database online dan dibagikan ke semua pengguna.<br>
+  Perubahan akan tersinkron otomatis ke perangkat lain.<br>
+  Rekening BRI: 794101019781531 a.n. Kakak Keli
+</div>
+
+<script>
+// ==================== KONFIGURASI ONLINE ====================
+const SUPABASE_URL = 'https://nnclbwtvcohiiptbakkz.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_HFYgoas0_PDzSDSMC3-ImQ_-_7A6zXW';
+const TARIF_PER_KWH = 1444;
+const KOS_PER_BULAN = 300000;
+const JUMLAH_KAMAR = 7;
+const NOMOR_TOKEN_LISTRIK = '56707933430';
+const API_BASE = SUPABASE_URL + '/rest/v1';
+
+let data = { kos_entries: [], token_entries: [], periode: getCurrentPeriode() };
+let syncing = false;
+
+const supabaseHeaders = {
+  'apikey': SUPABASE_PUBLISHABLE_KEY,
+  'Authorization': 'Bearer ' + SUPABASE_PUBLISHABLE_KEY,
+  'Content-Type': 'application/json'
+};
+
+function getCurrentPeriode() {
+  const now = new Date();
+  return now.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
+}
+
+function getCurrentBulan() {
+  const now = new Date();
+  return now.toLocaleString('id-ID', { month: 'long' });
+}
+
+async function api(path, options = {}) {
+  const response = await fetch(API_BASE + path, {
+    ...options,
+    headers: { ...supabaseHeaders, ...(options.headers || {}) }
+  });
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(text || ('HTTP ' + response.status));
+  }
+  if (response.status === 204) return null;
+  const text = await response.text();
+  return text ? JSON.parse(text) : null;
+}
+
+async function loadData(showMessage = false) {
+  if (syncing) return;
+  syncing = true;
+  try {
+    const periode = getCurrentPeriode();
+    const [kos, token] = await Promise.all([
+      api('/kos_entries?select=*&periode=eq.' + encodeURIComponent(periode) + '&order=tanggal.desc,created_at.desc'),
+      api('/token_entries?select=*&periode=eq.' + encodeURIComponent(periode) + '&order=tanggal.desc,created_at.desc')
+    ]);
+    data = {
+      kos_entries: Array.isArray(kos) ? kos : [],
+      token_entries: Array.isArray(token) ? token : [],
+      periode
+    };
+    renderAll();
+    if (showMessage) showToast('☁️ Data berhasil disinkronkan.');
+  } catch (e) {
+    console.error(e);
+    showToast('❌ Gagal terhubung ke database online. Pastikan SQL Supabase sudah dijalankan.');
+  } finally {
+    syncing = false;
+  }
+}
+
+// Tetap disediakan agar fitur Import JSON lama tidak rusak.
+function saveData() {
+  // Data sekarang disimpan langsung ke Supabase, bukan localStorage.
+}
+
+function formatRupiah(angka) {
+  return 'Rp ' + Number(angka || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+function formatTanggal(tgl) {
+  const d = new Date(tgl);
+  return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function getKamarSummaryKos() {
+  const summary = {};
+  for (let i = 1; i <= JUMLAH_KAMAR; i++) summary[i] = { total: 0, entries: [] };
+  data.kos_entries.forEach(e => {
+    if (summary[e.kamar]) {
+      summary[e.kamar].total += Number(e.jumlah || 0);
+      summary[e.kamar].entries.push(e);
+    }
+  });
+  return summary;
+}
+
+function getKamarSummaryToken() {
+  const summary = {};
+  for (let i = 1; i <= JUMLAH_KAMAR; i++) summary[i] = { total: 0, entries: [] };
+  data.token_entries.forEach(e => {
+    if (summary[e.kamar]) {
+      summary[e.kamar].total += Number(e.jumlah || 0);
+      summary[e.kamar].entries.push(e);
+    }
+  });
+  return summary;
+}
+
+// ==================== RENDER KOS ====================
+function renderKosStats() {
+  const total = data.kos_entries.reduce((sum, e) => sum + Number(e.jumlah || 0), 0);
+  const summary = getKamarSummaryKos();
+  const sudahBayar = Object.values(summary).filter(s => s.total > 0).length;
+  const belumBayar = JUMLAH_KAMAR - sudahBayar;
+  const target = JUMLAH_KAMAR * KOS_PER_BULAN;
+  const progress = target > 0 ? Math.min(100, Math.round((total / target) * 100)) : 0;
+
+  document.getElementById('kos-total').textContent = formatRupiah(total);
+  document.getElementById('kos-sudah').textContent = sudahBayar;
+  document.getElementById('kos-belum').textContent = belumBayar;
+  document.getElementById('kos-progress-text').textContent = progress + '%';
+  document.getElementById('kos-progress-bar').style.width = progress + '%';
+  const bar = document.getElementById('kos-progress-bar');
+  bar.className = 'progress-fill ' + (progress >= 100 ? 'green' : progress >= 50 ? 'orange' : 'red');
+}
+
+function renderKosKamar() {
+  const summary = getKamarSummaryKos();
+  const grid = document.getElementById('kos-kamar-grid');
+  grid.innerHTML = '';
+  for (let i = 1; i <= JUMLAH_KAMAR; i++) {
+    const s = summary[i];
+    const isPaid = s.total > 0;
+    const div = document.createElement('div');
+    div.className = 'kamar-item ' + (isPaid ? 'paid' : 'unpaid');
+    div.onclick = () => selectKamarKos(i);
+    div.innerHTML = `<div class="kamar-num">${i}</div><div class="kamar-status">${isPaid ? '✅ Lunas' : '❌ Belum'}</div>${isPaid ? `<div class="kamar-amount">${formatRupiah(s.total)}</div>` : '<div class="kamar-amount">300rb</div>'}`;
+    grid.appendChild(div);
+  }
+}
+
+function renderKosRiwayat() {
+  const container = document.getElementById('kos-riwayat-table');
+  if (data.kos_entries.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="icon">🏠</div><p>Belum ada pembayaran kos</p><p style="font-size:11px;">Isi form di atas untuk mencatat</p></div>`;
+    return;
+  }
+  const sorted = [...data.kos_entries].sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+  let html = `<table><thead><tr><th>Tanggal</th><th>Nama</th><th>Kamar</th><th>Bulan</th><th>Jumlah</th><th>Aksi</th></tr></thead><tbody>`;
+  sorted.forEach(e => {
+    html += `<tr><td>${formatTanggal(e.tanggal)}</td><td>${escapeHtml(e.nama)}</td><td>Pintu ${e.kamar}</td><td>${escapeHtml(e.bulan)}</td><td style="font-weight:700;color:#2563eb">${formatRupiah(e.jumlah)}</td><td><button class="btn btn-danger btn-sm" onclick="hapusKos('${e.id}')">🗑️</button></td></tr>`;
+  });
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+function selectKamarKos(nomor) {
+  document.getElementById('kos-kamar').value = nomor;
+  document.getElementById('kos-nama').focus();
+  showToast(`Pintu ${nomor} dipilih untuk bayar kos.`);
+}
+
+async function submitKos(e) {
+  e.preventDefault();
+  const nama = document.getElementById('kos-nama').value.trim();
+  const kamar = parseInt(document.getElementById('kos-kamar').value);
+  const bulan = document.getElementById('kos-bulan').value;
+  const jumlah = parseInt(document.getElementById('kos-jumlah').value);
+  const tanggal = document.getElementById('kos-tanggal').value;
+
+  if (!nama || !kamar || !bulan || !jumlah || !tanggal) {
+    showToast('❌ Semua field wajib diisi!');
+    return false;
+  }
+
+  try {
+    await api('/kos_entries', {
+      method: 'POST',
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ nama, kamar, bulan, jumlah, tanggal, periode: getCurrentPeriode() })
+    });
+    await loadData();
+    document.getElementById('kos-nama').value = '';
+    document.getElementById('kos-kamar').value = '';
+    document.getElementById('kos-bulan').value = '';
+    document.getElementById('kos-tanggal').value = new Date().toISOString().split('T')[0];
+    showToast(`✅ ${formatRupiah(jumlah)} dari ${nama} (Pintu ${kamar}) tersimpan online!`);
+  } catch (err) {
+    console.error(err);
+    showToast('❌ Gagal menyimpan pembayaran kos.');
+  }
+  return false;
+}
+
+async function hapusKos(id) {
+  if (!confirm('Yakin hapus data pembayaran kos ini?')) return;
+  try {
+    await api('/kos_entries?id=eq.' + encodeURIComponent(id), { method: 'DELETE' });
+    await loadData();
+    showToast('🗑️ Data kos dihapus dari database online.');
+  } catch (err) {
+    console.error(err);
+    showToast('❌ Gagal menghapus data kos.');
+  }
+}
+
+// ==================== RENDER TOKEN ====================
+function renderTokenStats() {
+  const total = data.token_entries.reduce((sum, e) => sum + Number(e.jumlah || 0), 0);
+  const summary = getKamarSummaryToken();
+  const sudahIsi = Object.values(summary).filter(s => s.total > 0).length;
+  const belumIsi = JUMLAH_KAMAR - sudahIsi;
+  const kwh = Math.round(total / TARIF_PER_KWH * 10) / 10;
+
+  document.getElementById('token-total').textContent = formatRupiah(total);
+  document.getElementById('token-kwh').textContent = kwh + ' kWh';
+  document.getElementById('token-sudah').textContent = sudahIsi;
+  document.getElementById('token-belum').textContent = belumIsi;
+}
+
+function renderTokenKamar() {
+  const summary = getKamarSummaryToken();
+  const grid = document.getElementById('token-kamar-grid');
+  grid.innerHTML = '';
+  for (let i = 1; i <= JUMLAH_KAMAR; i++) {
+    const s = summary[i];
+    const isPaid = s.total > 0;
+    const div = document.createElement('div');
+    div.className = 'kamar-item ' + (isPaid ? 'paid' : 'unpaid');
+    div.onclick = () => selectKamarToken(i);
+    div.innerHTML = `<div class="kamar-num">${i}</div><div class="kamar-status">${isPaid ? '✅ Sudah' : '❌ Belum'}</div>${isPaid ? `<div class="kamar-amount">${formatRupiah(s.total)}</div>` : ''}`;
+    grid.appendChild(div);
+  }
+}
+
+function renderTokenRiwayat() {
+  const container = document.getElementById('token-riwayat-table');
+  if (data.token_entries.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="icon">⚡</div><p>Belum ada pengisian token</p><p style="font-size:11px;">Isi form di atas untuk mencatat</p></div>`;
+    return;
+  }
+  const sorted = [...data.token_entries].sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+  let html = `<table><thead><tr><th>Tanggal</th><th>Nama</th><th>Kamar</th><th>Jumlah</th><th>Aksi</th></tr></thead><tbody>`;
+  sorted.forEach(e => {
+    html += `<tr><td>${formatTanggal(e.tanggal)}</td><td>${escapeHtml(e.nama)}</td><td>Pintu ${e.kamar}</td><td style="font-weight:700;color:#2563eb">${formatRupiah(e.jumlah)}</td><td><button class="btn btn-danger btn-sm" onclick="hapusToken('${e.id}')">🗑️</button></td></tr>`;
+  });
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+function selectKamarToken(nomor) {
+  document.getElementById('token-kamar').value = nomor;
+  document.getElementById('token-nama').focus();
+  showToast(`Pintu ${nomor} dipilih untuk isi token.`);
+}
+
+async function submitToken(e) {
+  e.preventDefault();
+  const nama = document.getElementById('token-nama').value.trim();
+  const kamar = parseInt(document.getElementById('token-kamar').value);
+  const jumlah = parseInt(document.getElementById('token-jumlah').value);
+  const tanggal = document.getElementById('token-tanggal').value;
+
+  if (!nama || !kamar || !jumlah || !tanggal) {
+    showToast('❌ Semua field wajib diisi!');
+    return false;
+  }
+
+  try {
+    await api('/token_entries', {
+      method: 'POST',
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ nama, kamar, jumlah, nomor_token: NOMOR_TOKEN_LISTRIK, tanggal, periode: getCurrentPeriode() })
+    });
+    await loadData();
+    document.getElementById('token-nama').value = '';
+    document.getElementById('token-kamar').value = '';
+    document.getElementById('token-jumlah').value = '';
+    document.getElementById('token-tanggal').value = new Date().toISOString().split('T')[0];
+    showToast(`✅ Token ${formatRupiah(jumlah)} dari ${nama} (Pintu ${kamar}) tersimpan online!`);
+  } catch (err) {
+    console.error(err);
+    showToast('❌ Gagal menyimpan data token.');
+  }
+  return false;
+}
+
+async function hapusToken(id) {
+  if (!confirm('Yakin hapus data token ini?')) return;
+  try {
+    await api('/token_entries?id=eq.' + encodeURIComponent(id), { method: 'DELETE' });
+    await loadData();
+    showToast('🗑️ Data token dihapus dari database online.');
+  } catch (err) {
+    console.error(err);
+    showToast('❌ Gagal menghapus data token.');
+  }
+}
+
+function copyTokenNumber() {
+  navigator.clipboard.writeText(NOMOR_TOKEN_LISTRIK).then(() => {
+    showToast('✅ Nomor token 56707933430 berhasil disalin!');
+  }).catch(() => showToast('Nomor token: ' + NOMOR_TOKEN_LISTRIK));
+}
+
+// ==================== TABS ====================
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+  if (event && event.target) event.target.classList.add('active');
+  document.getElementById('tab-' + tab).classList.remove('hidden');
+}
+
+// ==================== EXPORT ====================
+function exportWhatsAppFull() {
+  let text = `*📋 LAPORAN KOS & TOKEN LISTRIK*\nPeriode: ${data.periode}\n────────────────────────\n\n`;
+  const kosTotal = data.kos_entries.reduce((s, e) => s + Number(e.jumlah || 0), 0);
+  const kosSummary = getKamarSummaryKos();
+  const kosSudah = Object.values(kosSummary).filter(s => s.total > 0).length;
+  text += `*🏠 PEMBAYARAN KOS*\nTarget: ${formatRupiah(JUMLAH_KAMAR * KOS_PER_BULAN)} (7 x 300rb)\nTerkumpul: ${formatRupiah(kosTotal)}\nSudah bayar: ${kosSudah}/7 orang\n\n*Status per Pintu:*\n`;
+  for (let i = 1; i <= JUMLAH_KAMAR; i++) {
+    const s = kosSummary[i]; text += `Pintu ${i}: ${s.total > 0 ? '✅ Lunas ' + formatRupiah(s.total) : '❌ Belum 300rb'}\n`;
+  }
+  text += `\n*⚡ TOKEN LISTRIK*\nNomor token: ${NOMOR_TOKEN_LISTRIK}\n`;
+  const tokenTotal = data.token_entries.reduce((s, e) => s + Number(e.jumlah || 0), 0);
+  const tokenSummary = getKamarSummaryToken();
+  const tokenKwh = Math.round(tokenTotal / TARIF_PER_KWH * 10) / 10;
+  const tokenSudah = Object.values(tokenSummary).filter(s => s.total > 0).length;
+  text += `Total: ${formatRupiah(tokenTotal)}\nEstimasi: ${tokenKwh} kWh\nSudah isi: ${tokenSudah}/7 orang\n\n*Status per Pintu:*\n`;
+  for (let i = 1; i <= JUMLAH_KAMAR; i++) {
+    const s = tokenSummary[i]; text += `Pintu ${i}: ${s.total > 0 ? '✅ ' + formatRupiah(s.total) : '❌ Belum'}\n`;
+  }
+  text += `\n*🏦 Rekening Pembayaran:*\nBRI: 794101019781531\na.n. Kakak Keli\n\n_Yuk yang belum bayar/isi token, segera ya!_`;
+  document.getElementById('export-text').textContent = text;
+  document.getElementById('export-area').classList.remove('hidden');
+}
+
+function exportWhatsAppKos() {
+  const kosTotal = data.kos_entries.reduce((s, e) => s + Number(e.jumlah || 0), 0);
+  const kosSummary = getKamarSummaryKos();
+  const kosSudah = Object.values(kosSummary).filter(s => s.total > 0).length;
+  let text = `*🏠 REKAP PEMBAYARAN KOS*\nBulan: ${data.periode}\n────────────────────\nTarget: ${formatRupiah(JUMLAH_KAMAR * KOS_PER_BULAN)}\nTerkumpul: ${formatRupiah(kosTotal)}\nSudah: ${kosSudah}/7 orang\n\n*Status per Pintu:*\n`;
+  for (let i = 1; i <= JUMLAH_KAMAR; i++) { const s = kosSummary[i]; text += `Pintu ${i}: ${s.total > 0 ? '✅ Lunas ' + formatRupiah(s.total) : '❌ Belum bayar 300rb'}\n`; }
+  text += `\n*🏦 Transfer ke:*\nBRI 794101019781531\na.n. Kakak Keli\n\n_Yuk bayar kosnya!_`;
+  document.getElementById('export-text').textContent = text; document.getElementById('export-area').classList.remove('hidden');
+}
+
+function exportWhatsAppToken() {
+  const tokenTotal = data.token_entries.reduce((s, e) => s + Number(e.jumlah || 0), 0);
+  const tokenSummary = getKamarSummaryToken();
+  const tokenKwh = Math.round(tokenTotal / TARIF_PER_KWH * 10) / 10;
+  const tokenSudah = Object.values(tokenSummary).filter(s => s.total > 0).length;
+  let text = `*⚡ REKAP TOKEN LISTRIK*\nPeriode: ${data.periode}\nNomor token: ${NOMOR_TOKEN_LISTRIK}\n────────────────────\nTotal: ${formatRupiah(tokenTotal)}\nEstimasi: ${tokenKwh} kWh\nSudah isi: ${tokenSudah}/7 orang\n\n*Status per Pintu:*\n`;
+  for (let i = 1; i <= JUMLAH_KAMAR; i++) { const s = tokenSummary[i]; text += `Pintu ${i}: ${s.total > 0 ? '✅ ' + formatRupiah(s.total) : '❌ Belum isi'}\n`; }
+  text += `\n_Yuk isi tokennya biar listriknya gak mati!_`;
+  document.getElementById('export-text').textContent = text; document.getElementById('export-area').classList.remove('hidden');
+}
+
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob); const a = document.createElement('a');
+  a.href = url; a.download = `kos-token-${data.periode.replace(/\s+/g, '-').toLowerCase()}.json`; a.click(); URL.revokeObjectURL(url);
+  showToast('💾 File JSON di-download');
+}
+
+async function importJSON(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async function(ev) {
+    try {
+      const imported = JSON.parse(ev.target.result);
+      if (!imported.kos_entries || !imported.token_entries) throw new Error('Format');
+      if (!confirm('Import akan menambahkan data ke database online. Lanjutkan?')) return;
+      for (const x of imported.kos_entries) {
+        await api('/kos_entries', { method:'POST', headers:{'Prefer':'return=minimal'}, body:JSON.stringify({nama:x.nama || 'Tidak diketahui', kamar:x.kamar, bulan:x.bulan || getCurrentBulan(), jumlah:Number(x.jumlah||0), tanggal:x.tanggal, periode:getCurrentPeriode()}) });
+      }
+      for (const x of imported.token_entries) {
+        await api('/token_entries', { method:'POST', headers:{'Prefer':'return=minimal'}, body:JSON.stringify({nama:x.nama || 'Tidak diketahui', kamar:x.kamar, jumlah:Number(x.jumlah||0), nomor_token:NOMOR_TOKEN_LISTRIK, tanggal:x.tanggal, periode:getCurrentPeriode()}) });
+      }
+      await loadData(); showToast('📁 Data berhasil di-import ke database online!');
+    } catch(err) { console.error(err); showToast('❌ Gagal import data.'); }
+  };
+  reader.readAsText(file); e.target.value = '';
+}
+
+function copyToClipboard() {
+  const text = document.getElementById('export-text').textContent;
+  navigator.clipboard.writeText(text).then(() => showToast('📋 Teks dicopy! Paste ke grup WA.')).catch(() => showToast('❌ Gagal menyalin teks.'));
+}
+
+function copyRek() {
+  const rek = '794101019781531';
+  navigator.clipboard.writeText(rek).then(() => showToast('📋 Nomor rekening dicopy!')).catch(() => showToast('Nomor rekening: ' + rek));
+}
+
+async function resetData() {
+  if (!confirm('Yakin hapus SEMUA data kos & token periode ini? Ini akan terhapus untuk SEMUA teman.')) return;
+  try {
+    const periode = getCurrentPeriode();
+    await api('/kos_entries?periode=eq.' + encodeURIComponent(periode), { method:'DELETE' });
+    await api('/token_entries?periode=eq.' + encodeURIComponent(periode), { method:'DELETE' });
+    await loadData(); showToast('🗑️ Semua data periode ini direset untuk semua pengguna.');
+  } catch(err) { console.error(err); showToast('❌ Gagal mereset data.'); }
+}
+
+function toggleSection(id) { document.getElementById(id).classList.toggle('hidden'); }
+
+function showToast(msg) {
+  const existing = document.querySelector('.toast'); if (existing) existing.remove();
+  const toast = document.createElement('div'); toast.className = 'toast'; toast.textContent = msg;
+  document.body.appendChild(toast); setTimeout(() => toast.remove(), 3000);
+}
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+}
+
+function renderAll() {
+  renderKosStats(); renderKosKamar(); renderKosRiwayat(); renderTokenStats(); renderTokenKamar(); renderTokenRiwayat();
+}
+
+// ==================== INIT ====================
+document.getElementById('kos-tanggal').value = new Date().toISOString().split('T')[0];
+document.getElementById('token-tanggal').value = new Date().toISOString().split('T')[0];
+loadData(true);
+// Sinkronisasi otomatis setiap 10 detik agar semua HP/laptop melihat perubahan terbaru.
+setInterval(() => loadData(false), 10000);
+</script>
+
+</body>
+</html>
