@@ -25,15 +25,11 @@ alter table token_entries enable row level security;
 
 drop policy if exists "public read kos" on kos_entries;
 drop policy if exists "public insert kos" on kos_entries;
-drop policy if exists "public delete kos" on kos_entries;
 drop policy if exists "public read token" on token_entries;
 drop policy if exists "public insert token" on token_entries;
-drop policy if exists "public delete token" on token_entries;
 
 create policy "public read kos" on kos_entries for select to anon using (true);
 create policy "public insert kos" on kos_entries for insert to anon with check (true);
-create policy "public delete kos" on kos_entries for delete to anon using (true);
 
 create policy "public read token" on token_entries for select to anon using (true);
 create policy "public insert token" on token_entries for insert to anon with check (true);
-create policy "public delete token" on token_entries for delete to anon using (true);
