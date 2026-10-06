@@ -44,3 +44,5 @@ File ini memakai Supabase Publishable Key, bukan service-role/secret key.
 Jangan pernah memasukkan service-role key ke HTML, JavaScript browser, GitHub, atau Vercel.
 
 Catatan: aplikasi publik dapat membaca dan menambah data, tetapi akses hapus publik sengaja tidak diberikan. Untuk menghapus data secara aman, tambahkan login/authentication dan policy RLS khusus admin.
+
+update fix login - trigger deploy terbaru - 2026-10-06
