@@ -20,8 +20,17 @@ create table if not exists token_entries (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.admin_emails (
+  email text primary key
+);
+
+insert into public.admin_emails (email)
+values ('wetipoendy@gmail.com')
+on conflict (email) do nothing;
+
 alter table kos_entries enable row level security;
 alter table token_entries enable row level security;
+alter table public.admin_emails enable row level security;
 
 drop policy if exists "public read kos" on kos_entries;
 drop policy if exists "public insert kos" on kos_entries;
@@ -31,9 +40,36 @@ drop policy if exists "public read token" on token_entries;
 drop policy if exists "public insert token" on token_entries;
 drop policy if exists "authenticated read token" on token_entries;
 drop policy if exists "authenticated insert token" on token_entries;
+drop policy if exists "admin read own email" on public.admin_emails;
+drop policy if exists "admin update kos" on kos_entries;
+drop policy if exists "admin delete kos" on kos_entries;
+drop policy if exists "admin update token" on token_entries;
+drop policy if exists "admin delete token" on token_entries;
 
 create policy "authenticated read kos" on kos_entries for select to authenticated using (true);
 create policy "authenticated insert kos" on kos_entries for insert to authenticated with check (true);
 
 create policy "authenticated read token" on token_entries for select to authenticated using (true);
 create policy "authenticated insert token" on token_entries for insert to authenticated with check (true);
+
+create policy "admin read own email"
+on public.admin_emails for select to authenticated
+using (lower(email) = lower(auth.jwt() ->> 'email'));
+
+create policy "admin update kos"
+on kos_entries for update to authenticated
+using (exists (select 1 from public.admin_emails a where lower(a.email) = lower(auth.jwt() ->> 'email')))
+with check (exists (select 1 from public.admin_emails a where lower(a.email) = lower(auth.jwt() ->> 'email')));
+
+create policy "admin delete kos"
+on kos_entries for delete to authenticated
+using (exists (select 1 from public.admin_emails a where lower(a.email) = lower(auth.jwt() ->> 'email')));
+
+create policy "admin update token"
+on token_entries for update to authenticated
+using (exists (select 1 from public.admin_emails a where lower(a.email) = lower(auth.jwt() ->> 'email')))
+with check (exists (select 1 from public.admin_emails a where lower(a.email) = lower(auth.jwt() ->> 'email')));
+
+create policy "admin delete token"
+on token_entries for delete to authenticated
+using (exists (select 1 from public.admin_emails a where lower(a.email) = lower(auth.jwt() ->> 'email')));

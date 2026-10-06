@@ -98,7 +98,7 @@
   <p class="auth-note">Silakan masuk dengan akun yang sudah didaftarkan. Hanya pengguna yang masuk yang dapat melihat dan mencatat data kos.</p>
   <form id="login-form" onsubmit="return loginUser(event)">
     <div class="form-group"><label>Email</label><input type="email" id="auth-email" autocomplete="email" required placeholder="nama@email.com"></div>
-    <div class="form-group"><label>Password</label><input type="password" id="auth-password" autocomplete="current-password" required minlength="6" placeholder="Minimal 6 karakter"></div>
+    <div class="form-group"><label>Password</label><div style="display:flex;gap:6px;"><input type="password" id="auth-password" autocomplete="current-password" required minlength="6" placeholder="Minimal 6 karakter" style="flex:1;"><button type="button" class="btn btn-sm" onclick="togglePassword()">Lihat</button></div></div>
     <button type="submit" class="btn btn-primary" style="width:100%;">Masuk</button>
   </form>
   <button class="btn btn-info btn-sm" style="width:100%;margin-top:8px;" onclick="showSignup()">Buat akun baru</button>
@@ -326,8 +326,6 @@
     <button class="btn btn-info btn-sm" onclick="exportWhatsAppKos()">🏠 Copy Kos Saja</button>
     <button class="btn btn-warning btn-sm" onclick="exportWhatsAppToken()">⚡ Copy Token Saja</button>
     <button class="btn btn-primary btn-sm" onclick="exportJSON()">💾 Export JSON</button>
-    <button class="btn btn-primary btn-sm" onclick="document.getElementById('import-file').click()">📁 Import JSON</button>
-    <input type="file" id="import-file" class="hidden" accept=".json" onchange="importJSON(event)">
   </div>
   <div id="export-area" class="hidden">
     <div class="copy-box" id="export-text"></div>
@@ -355,6 +353,8 @@ const AUTH_BASE = SUPABASE_URL + '/auth/v1';
 let data = { kos_entries: [], token_entries: [], periode: getCurrentPeriode() };
 let syncing = false;
 let sessionToken = localStorage.getItem('bukukos_session') || '';
+let currentUserEmail = '';
+let isAdmin = false;
 
 function getSupabaseHeaders() {
   return {
@@ -394,6 +394,20 @@ function setAuthMessage(message) {
   el.classList.toggle('hidden', !message);
 }
 
+function togglePassword() {
+  const input = document.getElementById('auth-password');
+  const button = input.parentElement.querySelector('button');
+  input.type = input.type === 'password' ? 'text' : 'password';
+  button.textContent = input.type === 'password' ? 'Lihat' : 'Sembunyikan';
+}
+
+async function checkAdmin(email) {
+  try {
+    const rows = await api('/admin_emails?select=email&email=ilike.' + encodeURIComponent(email));
+    isAdmin = Array.isArray(rows) && rows.some(row => String(row.email).toLowerCase() === email.toLowerCase());
+  } catch (err) { isAdmin = false; }
+}
+
 function setAppVisibility(loggedIn, email = '') {
   const alwaysVisible = new Set(['auth-panel', 'user-bar', 'online-status']);
   [...document.body.children].forEach(el => {
@@ -420,7 +434,9 @@ async function loginUser(e) {
     if (!response.ok) throw new Error(result.error_description || result.msg || result.message || 'Login gagal');
     sessionToken = result.access_token;
     localStorage.setItem('bukukos_session', sessionToken);
-    setAuthMessage(''); setAppVisibility(true, result.user?.email || email);
+    currentUserEmail = result.user?.email || email;
+    await checkAdmin(currentUserEmail);
+    setAuthMessage(''); setAppVisibility(true, currentUserEmail);
     await loadData(true);
   } catch (err) { setAuthMessage('❌ ' + err.message); }
   return false;
@@ -453,7 +469,9 @@ async function checkSession() {
     const response = await fetch(AUTH_BASE + '/user', { headers: getSupabaseHeaders() });
     if (!response.ok) throw new Error('Sesi berakhir');
     const user = await response.json();
-    setAppVisibility(true, user.email || 'pengguna'); await loadData(true);
+    currentUserEmail = user.email || 'pengguna';
+    await checkAdmin(currentUserEmail);
+    setAppVisibility(true, currentUserEmail); await loadData(true);
   } catch (err) { logoutUser(); }
 }
 
@@ -559,9 +577,10 @@ function renderKosRiwayat() {
     return;
   }
   const sorted = [...data.kos_entries].sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
-  let html = `<table><thead><tr><th>Tanggal</th><th>Nama</th><th>Kamar</th><th>Bulan</th><th>Jumlah</th></tr></thead><tbody>`;
+  let html = `<table><thead><tr><th>Tanggal</th><th>Nama</th><th>Kamar</th><th>Bulan</th><th>Jumlah</th>${isAdmin ? '<th>Aksi</th>' : ''}</tr></thead><tbody>`;
   sorted.forEach(e => {
-    html += `<tr><td>${formatTanggal(e.tanggal)}</td><td>${escapeHtml(e.nama)}</td><td>Pintu ${e.kamar}</td><td>${escapeHtml(e.bulan)}</td><td style="font-weight:700;color:#2563eb">${formatRupiah(e.jumlah)}</td></tr>`;
+    const actions = isAdmin ? `<td><button class="btn btn-warning btn-sm" onclick="editKos('${e.id}')">Edit</button> <button class="btn btn-danger btn-sm" onclick="hapusKos('${e.id}')">Hapus</button></td>` : '';
+    html += `<tr><td>${formatTanggal(e.tanggal)}</td><td>${escapeHtml(e.nama)}</td><td>Pintu ${e.kamar}</td><td>${escapeHtml(e.bulan)}</td><td style="font-weight:700;color:#2563eb">${formatRupiah(e.jumlah)}</td>${actions}</tr>`;
   });
   html += '</tbody></table>';
   container.innerHTML = html;
@@ -617,6 +636,20 @@ async function hapusKos(id) {
   }
 }
 
+async function editKos(id) {
+  if (!isAdmin) return;
+  const item = data.kos_entries.find(e => String(e.id) === String(id));
+  if (!item) return;
+  const tanggal = prompt('Tanggal (YYYY-MM-DD):', item.tanggal);
+  if (tanggal === null) return;
+  const jumlah = prompt('Jumlah pembayaran:', item.jumlah);
+  if (jumlah === null) return;
+  try {
+    await api('/kos_entries?id=eq.' + encodeURIComponent(id), { method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify({ tanggal, jumlah: Number(jumlah) }) });
+    await loadData(); showToast('✅ Data pembayaran diperbarui.');
+  } catch (err) { console.error(err); showToast('❌ Gagal memperbarui data.'); }
+}
+
 // ==================== RENDER TOKEN ====================
 function renderTokenStats() {
   const total = data.token_entries.reduce((sum, e) => sum + Number(e.jumlah || 0), 0);
@@ -653,9 +686,10 @@ function renderTokenRiwayat() {
     return;
   }
   const sorted = [...data.token_entries].sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
-  let html = `<table><thead><tr><th>Tanggal</th><th>Nama</th><th>Kamar</th><th>Jumlah</th></tr></thead><tbody>`;
+  let html = `<table><thead><tr><th>Tanggal</th><th>Nama</th><th>Kamar</th><th>Jumlah</th>${isAdmin ? '<th>Aksi</th>' : ''}</tr></thead><tbody>`;
   sorted.forEach(e => {
-    html += `<tr><td>${formatTanggal(e.tanggal)}</td><td>${escapeHtml(e.nama)}</td><td>Pintu ${e.kamar}</td><td style="font-weight:700;color:#2563eb">${formatRupiah(e.jumlah)}</td></tr>`;
+    const actions = isAdmin ? `<td><button class="btn btn-warning btn-sm" onclick="editToken('${e.id}')">Edit</button> <button class="btn btn-danger btn-sm" onclick="hapusToken('${e.id}')">Hapus</button></td>` : '';
+    html += `<tr><td>${formatTanggal(e.tanggal)}</td><td>${escapeHtml(e.nama)}</td><td>Pintu ${e.kamar}</td><td style="font-weight:700;color:#2563eb">${formatRupiah(e.jumlah)}</td>${actions}</tr>`;
   });
   html += '</tbody></table>';
   container.innerHTML = html;
@@ -708,6 +742,20 @@ async function hapusToken(id) {
     console.error(err);
     showToast('❌ Gagal menghapus data token.');
   }
+}
+
+async function editToken(id) {
+  if (!isAdmin) return;
+  const item = data.token_entries.find(e => String(e.id) === String(id));
+  if (!item) return;
+  const tanggal = prompt('Tanggal (YYYY-MM-DD):', item.tanggal);
+  if (tanggal === null) return;
+  const jumlah = prompt('Jumlah token:', item.jumlah);
+  if (jumlah === null) return;
+  try {
+    await api('/token_entries?id=eq.' + encodeURIComponent(id), { method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify({ tanggal, jumlah: Number(jumlah) }) });
+    await loadData(); showToast('✅ Data token diperbarui.');
+  } catch (err) { console.error(err); showToast('❌ Gagal memperbarui data token.'); }
 }
 
 function copyTokenNumber() {
