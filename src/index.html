@@ -84,6 +84,20 @@
   .auth-card h2 { font-size: 18px; margin-bottom: 6px; }
   .auth-note { color: #64748b; font-size: 12px; line-height: 1.5; margin-bottom: 14px; }
   .auth-error { color: #b91c1c; background: #fef2f2; border-radius: 8px; padding: 8px; font-size: 12px; margin-top: 10px; }
+  .login-form .form-group { margin-bottom: 14px; }
+  .login-form .form-group label { color: #334155; margin-bottom: 6px; }
+  .login-input-wrap { position: relative; }
+  .login-input-wrap input { padding-left: 42px !important; border-radius: 12px !important; background: #f8fafc !important; }
+  .login-input-wrap input:focus { background: #fff !important; box-shadow: 0 0 0 3px rgba(59,130,246,.12); }
+  .login-field-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: #64748b; pointer-events: none; }
+  .login-password-row { display: flex; justify-content: flex-end; margin-top: 6px; }
+  .login-password-row a { color: #2563eb; font-size: 11px; font-weight: 600; text-decoration: none; }
+  .login-password-row a:hover { text-decoration: underline; }
+  .login-submit { width: 100%; display: flex; align-items: center; justify-content: center; gap: 9px; padding: 12px; border-radius: 12px; background: linear-gradient(135deg,#1e3a5f,#2563eb); }
+  .login-submit svg { width: 18px; height: 18px; }
+  .login-signup { margin-top: 13px; color: #64748b; font-size: 12px; text-align: center; }
+  .login-signup a { margin-left: 3px; color: #2563eb; font-weight: 800; text-decoration: none; }
+  .login-signup a:hover { text-decoration: underline; }
   .required-mark { color: #dc2626; font-weight: 800; margin-left: 3px; }
   .field-error { display: none; color: #dc2626; font-size: 11px; font-weight: 600; line-height: 1.35; margin-top: 5px; }
   .field-error.visible { display: block; }
@@ -121,12 +135,26 @@
 <div id="auth-panel" class="auth-card">
   <h2>🔐 Masuk ke BukuKosOnline</h2>
   <p class="auth-note">Silakan masuk dengan akun yang sudah didaftarkan. Hanya pengguna yang masuk yang dapat melihat dan mencatat data kos.</p>
-  <form id="login-form" onsubmit="return loginUser(event)">
-    <div class="form-group"><label for="auth-email">Email</label><input type="email" id="auth-email" autocomplete="email" required placeholder="nama@email.com"></div>
-    <div class="form-group"><label for="auth-password">Password</label><div class="password-field"><input type="password" id="auth-password" autocomplete="current-password" required minlength="6" placeholder="Minimal 6 karakter"><button type="button" class="password-toggle" aria-label="Tampilkan password" aria-pressed="false" onclick="togglePassword('auth-password', this)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
-    <button type="submit" class="btn btn-primary" style="width:100%;">Masuk</button>
+  <form id="login-form" class="login-form" onsubmit="return loginUser(event)">
+    <div class="form-group">
+      <label for="auth-email">Email</label>
+      <div class="login-input-wrap">
+        <svg class="login-field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.6 3.1-5.4 7-5.4s6.2 1.8 7 5.4"/></svg>
+        <input type="email" id="auth-email" autocomplete="email" required placeholder="Email">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="auth-password">Password</label>
+      <div class="password-field login-input-wrap">
+        <svg class="login-field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="m11 12 8-8 2 2-2 2 2 2-3 3-2-2-2 2"/></svg>
+        <input type="password" id="auth-password" class="login-input" autocomplete="current-password" required minlength="6" placeholder="Minimal 6 karakter">
+        <button type="button" class="password-toggle" aria-label="Tampilkan password" aria-pressed="false" onclick="togglePassword('auth-password', this)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+      </div>
+      <div class="login-password-row"><a href="#" onclick="return requestPasswordReset(event)">Lupa Password? / Atur Ulang Kata Sandi?</a></div>
+    </div>
+    <button type="submit" class="btn btn-primary login-submit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M10 17l5-5-5-5M15 12H3"/><path d="M12 3h6a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3h-6"/></svg><span>Masuk</span></button>
   </form>
-  <button class="btn btn-info btn-sm" style="width:100%;margin-top:8px;" onclick="showSignup()">Buat akun baru</button>
+  <p class="login-signup">Belum memiliki akun?<a href="#/signup" onclick="showSignup(); return false;">Daftar</a></p>
   <div id="auth-message" class="auth-error hidden" role="status" aria-live="polite"></div>
 </div>
 <div id="signup-panel" class="auth-card hidden">
@@ -533,6 +561,34 @@ async function loginUser(e) {
     setAuthMessage(''); setAppVisibility(true, currentUserEmail);
     navigate('/dashboard');
     await loadData(true);
+  } catch (err) { setAuthMessage('❌ ' + err.message); }
+  return false;
+}
+
+async function requestPasswordReset(e) {
+  e.preventDefault();
+  const emailInput = document.getElementById('auth-email');
+  const email = emailInput.value.trim();
+  if (!email) {
+    setAuthMessage('Masukkan email terlebih dahulu untuk menerima tautan atur ulang kata sandi.');
+    emailInput.focus();
+    return false;
+  }
+  if (!emailInput.validity.valid) {
+    emailInput.reportValidity();
+    return false;
+  }
+  setAuthMessage('Mengirim instruksi atur ulang kata sandi...');
+  try {
+    const response = await fetch(AUTH_BASE + '/recover', {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_PUBLISHABLE_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    let result = {};
+    try { result = await response.json(); } catch (err) {}
+    if (!response.ok) throw new Error(result.msg || result.message || result.error_description || 'Permintaan atur ulang kata sandi gagal');
+    setAuthMessage('Jika email terdaftar, tautan atur ulang kata sandi akan dikirim. Periksa inbox dan folder spam.');
   } catch (err) { setAuthMessage('❌ ' + err.message); }
   return false;
 }
