@@ -84,6 +84,13 @@
   .auth-card h2 { font-size: 18px; margin-bottom: 6px; }
   .auth-note { color: #64748b; font-size: 12px; line-height: 1.5; margin-bottom: 14px; }
   .auth-error { color: #b91c1c; background: #fef2f2; border-radius: 8px; padding: 8px; font-size: 12px; margin-top: 10px; }
+  .required-mark { color: #dc2626; font-weight: 800; margin-left: 3px; }
+  .field-error { display: none; color: #dc2626; font-size: 11px; font-weight: 600; line-height: 1.35; margin-top: 5px; }
+  .field-error.visible { display: block; }
+  .form-group input.invalid, .form-group select.invalid { border-color: #dc2626; }
+  .terms-label { display: flex !important; align-items: flex-start; gap: 8px; color: #475569 !important; font-size: 12px !important; line-height: 1.5; cursor: pointer; }
+  .terms-label input { width: 16px !important; height: 16px; margin: 1px 0 0; accent-color: #2563eb; flex: 0 0 auto; }
+  #signup-submit:disabled { background: #a8b0bd; color: #fff; cursor: not-allowed; box-shadow: none; transform: none; }
   .user-bar { display:flex; justify-content:space-between; align-items:center; gap:8px; background:#eff6ff; color:#1e40af; border-radius:10px; padding:8px 10px; margin-bottom:10px; font-size:12px; }
   .password-field { position:relative; }
   .password-field input { padding-right:48px !important; }
@@ -125,10 +132,58 @@
 <div id="signup-panel" class="auth-card hidden">
   <h2>🪪 Buat akun</h2>
   <p class="auth-note">Daftarkan email dan password untuk mengakses catatan kos bersama.</p>
-  <form id="signup-form" onsubmit="return signupUser(event)">
-    <div class="form-group"><label for="signup-email">Email</label><input type="email" id="signup-email" autocomplete="email" required placeholder="nama@email.com"></div>
-    <div class="form-group"><label for="signup-password">Password</label><div class="password-field"><input type="password" id="signup-password" autocomplete="new-password" required minlength="6" placeholder="Minimal 6 karakter"><button type="button" class="password-toggle" aria-label="Tampilkan password" aria-pressed="false" onclick="togglePassword('signup-password', this)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
-    <button type="submit" class="btn btn-primary" style="width:100%;">Daftar</button>
+  <form id="signup-form" novalidate onsubmit="return signupUser(event)">
+    <div class="form-group">
+      <label for="signup-email">Email<span class="required-mark">*</span></label>
+      <input type="email" id="signup-email" autocomplete="email" required placeholder="nama@email.com" aria-describedby="signup-email-error">
+      <small class="field-error" id="signup-email-error" role="alert"></small>
+    </div>
+    <div class="form-group">
+      <label for="signup-full-name">Nama Lengkap<span class="required-mark">*</span></label>
+      <input type="text" id="signup-full-name" autocomplete="name" required placeholder="Masukan nama lengkap" aria-describedby="signup-full-name-error">
+      <small class="field-error" id="signup-full-name-error" role="alert"></small>
+    </div>
+    <div class="form-group">
+      <label for="signup-whatsapp">Nomor WhatsApp<span class="required-mark">*</span></label>
+      <input type="tel" id="signup-whatsapp" autocomplete="tel" inputmode="tel" required placeholder="0812xxxx" aria-describedby="signup-whatsapp-error">
+      <small class="field-error" id="signup-whatsapp-error" role="alert"></small>
+    </div>
+    <div class="form-group">
+      <label for="signup-kos-name">Nama Kos<span class="required-mark">*</span></label>
+      <input type="text" id="signup-kos-name" required placeholder="Kos Endy Barokah" aria-describedby="signup-kos-name-error">
+      <small class="field-error" id="signup-kos-name-error" role="alert"></small>
+    </div>
+    <div class="form-group">
+      <label for="signup-occupants">Jumlah Penghuni / Isi Kamar<span class="required-mark">*</span></label>
+      <select id="signup-occupants" required aria-describedby="signup-occupants-error">
+        <option value="">Pilih jumlah penghuni</option>
+        <option value="1 Orang">1 Orang</option>
+        <option value="2 Orang">2 Orang</option>
+        <option value="Pasangan">Pasangan</option>
+        <option value="Keluarga">Keluarga</option>
+      </select>
+      <small class="field-error" id="signup-occupants-error" role="alert"></small>
+    </div>
+    <div class="form-group">
+      <label for="signup-origin">Asal Daerah<span class="required-mark">*</span></label>
+      <input type="text" id="signup-origin" autocomplete="address-level2" required placeholder="Asal kota - contoh: Depok" aria-describedby="signup-origin-error">
+      <small class="field-error" id="signup-origin-error" role="alert"></small>
+    </div>
+    <div class="form-group">
+      <label for="signup-password">Password<span class="required-mark">*</span></label>
+      <div class="password-field"><input type="password" id="signup-password" autocomplete="new-password" required minlength="6" placeholder="Minimal 6 karakter" aria-describedby="signup-password-error"><button type="button" class="password-toggle" aria-label="Tampilkan password" aria-pressed="false" onclick="togglePassword('signup-password', this)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7S18.4 19 12 19 2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+      <small class="field-error" id="signup-password-error" role="alert"></small>
+    </div>
+    <div class="form-group">
+      <label for="signup-password-confirm">Konfirmasi Password<span class="required-mark">*</span></label>
+      <div class="password-field"><input type="password" id="signup-password-confirm" autocomplete="new-password" required placeholder="Ulangi password" aria-describedby="signup-password-confirm-error"><button type="button" class="password-toggle" aria-label="Tampilkan password" aria-pressed="false" onclick="togglePassword('signup-password-confirm', this)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7S18.4 19 12 19 2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+      <small class="field-error" id="signup-password-confirm-error" role="alert"></small>
+    </div>
+    <div class="form-group">
+      <label class="terms-label" for="signup-terms"><input type="checkbox" id="signup-terms" required aria-describedby="signup-terms-error"><span>Saya setuju dengan Syarat Penggunaan BukuKosOnline<span class="required-mark">*</span></span></label>
+      <small class="field-error" id="signup-terms-error" role="alert"></small>
+    </div>
+    <button type="submit" class="btn btn-primary" id="signup-submit" style="width:100%;" disabled>Daftar</button>
   </form>
   <button class="btn btn-sm" style="width:100%;margin-top:8px;" onclick="navigate('/login')">Kembali ke login</button>
   <div id="signup-message" class="auth-error hidden" role="status" aria-live="polite"></div>
@@ -487,21 +542,150 @@ function showSignup() {
   navigate('/signup');
 }
 
+const signupFieldIds = [
+  'signup-email', 'signup-full-name', 'signup-whatsapp', 'signup-kos-name',
+  'signup-occupants', 'signup-origin', 'signup-password', 'signup-password-confirm'
+];
+
+function signupFieldError(fieldId) {
+  const field = document.getElementById(fieldId);
+  const value = field.value.trim();
+  if (!value) {
+    const messages = {
+      'signup-email': 'Email wajib diisi',
+      'signup-full-name': 'Nama lengkap wajib diisi',
+      'signup-whatsapp': 'Nomor WA wajib diisi',
+      'signup-kos-name': 'Nama kos wajib diisi',
+      'signup-occupants': 'Jumlah penghuni wajib diisi',
+      'signup-origin': 'Asal daerah wajib diisi',
+      'signup-password': 'Password wajib diisi',
+      'signup-password-confirm': 'Konfirmasi password wajib diisi'
+    };
+    return messages[fieldId];
+  }
+  if (fieldId === 'signup-email' && !field.validity.valid) return 'Masukkan email yang valid';
+  if (fieldId === 'signup-password' && field.value.length < 6) return 'Password minimal 6 karakter';
+  if (fieldId === 'signup-password-confirm' && field.value !== document.getElementById('signup-password').value) return 'Konfirmasi password tidak sama';
+  return '';
+}
+
+function setSignupFieldError(fieldId, message) {
+  const field = document.getElementById(fieldId);
+  const error = document.getElementById(fieldId + '-error');
+  field.classList.toggle('invalid', Boolean(message));
+  field.setAttribute('aria-invalid', String(Boolean(message)));
+  error.textContent = message || '';
+  error.classList.toggle('visible', Boolean(message));
+}
+
+function validateSignupField(fieldId) {
+  const message = signupFieldError(fieldId);
+  setSignupFieldError(fieldId, message);
+  return !message;
+}
+
+function updateSignupSubmitButton() {
+  document.getElementById('signup-submit').disabled = !document.getElementById('signup-terms').checked;
+}
+
+function validateSignupForm() {
+  let firstInvalid = null;
+  signupFieldIds.forEach(fieldId => {
+    if (!validateSignupField(fieldId) && !firstInvalid) firstInvalid = document.getElementById(fieldId);
+  });
+  const terms = document.getElementById('signup-terms');
+  const termsError = document.getElementById('signup-terms-error');
+  const termsMessage = terms.checked ? '' : 'Persetujuan syarat wajib dicentang';
+  terms.setAttribute('aria-invalid', String(Boolean(termsMessage)));
+  termsError.textContent = termsMessage;
+  termsError.classList.toggle('visible', Boolean(termsMessage));
+  updateSignupSubmitButton();
+  if (firstInvalid) firstInvalid.focus();
+  else if (termsMessage) terms.focus();
+  return !firstInvalid && !termsMessage;
+}
+
+function initSignupValidation() {
+  signupFieldIds.forEach(fieldId => {
+    const field = document.getElementById(fieldId);
+    field.addEventListener('blur', () => {
+      field.dataset.touched = 'true';
+      validateSignupField(fieldId);
+    });
+    field.addEventListener('input', () => {
+      if (field.dataset.touched === 'true' || field.getAttribute('aria-invalid') === 'true') validateSignupField(fieldId);
+      if (fieldId === 'signup-password') {
+        const confirmation = document.getElementById('signup-password-confirm');
+        if (confirmation.dataset.touched === 'true' || confirmation.getAttribute('aria-invalid') === 'true') validateSignupField('signup-password-confirm');
+      }
+    });
+    if (field.tagName === 'SELECT') field.addEventListener('change', () => validateSignupField(fieldId));
+  });
+  const terms = document.getElementById('signup-terms');
+  terms.addEventListener('change', () => {
+    updateSignupSubmitButton();
+    if (terms.checked) {
+      terms.setAttribute('aria-invalid', 'false');
+      document.getElementById('signup-terms-error').textContent = '';
+      document.getElementById('signup-terms-error').classList.remove('visible');
+    } else if (terms.dataset.touched === 'true') {
+      const error = document.getElementById('signup-terms-error');
+      error.textContent = 'Persetujuan syarat wajib dicentang';
+      error.classList.add('visible');
+      terms.setAttribute('aria-invalid', 'true');
+    }
+    terms.dataset.touched = 'true';
+  });
+  terms.addEventListener('blur', () => {
+    terms.dataset.touched = 'true';
+    if (!terms.checked) {
+      const error = document.getElementById('signup-terms-error');
+      error.textContent = 'Persetujuan syarat wajib dicentang';
+      error.classList.add('visible');
+      terms.setAttribute('aria-invalid', 'true');
+    }
+  });
+  updateSignupSubmitButton();
+}
+
 async function signupUser(e) {
   e.preventDefault();
+  setAuthMessage('');
+  if (!validateSignupForm()) return false;
   const email = document.getElementById('signup-email').value.trim();
   const password = document.getElementById('signup-password').value;
+  const signupData = {
+    full_name: document.getElementById('signup-full-name').value.trim(),
+    whatsapp: document.getElementById('signup-whatsapp').value.trim(),
+    kos_name: document.getElementById('signup-kos-name').value.trim(),
+    occupants: document.getElementById('signup-occupants').value,
+    origin_region: document.getElementById('signup-origin').value.trim()
+  };
+  const submitButton = document.getElementById('signup-submit');
+  submitButton.disabled = true;
   try {
     const response = await fetch(AUTH_BASE + '/signup', {
       method: 'POST', headers: { 'apikey': SUPABASE_PUBLISHABLE_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ email, password, data: signupData })
     });
     const result = await response.json();
     if (!response.ok) throw new Error(result.msg || result.message || result.error_description || 'Pendaftaran gagal');
     document.getElementById('signup-form').reset();
+    signupFieldIds.forEach(fieldId => {
+      const field = document.getElementById(fieldId);
+      delete field.dataset.touched;
+      setSignupFieldError(fieldId, '');
+    });
+    const terms = document.getElementById('signup-terms');
+    delete terms.dataset.touched;
+    terms.setAttribute('aria-invalid', 'false');
+    document.getElementById('signup-terms-error').textContent = '';
+    document.getElementById('signup-terms-error').classList.remove('visible');
+    updateSignupSubmitButton();
     navigate('/login');
     setAuthMessage(result.access_token ? 'Akun berhasil dibuat. Silakan masuk.' : 'Akun dibuat. Cek email untuk konfirmasi, lalu masuk.');
   } catch (err) { setAuthMessage('❌ ' + err.message); }
+  finally { updateSignupSubmitButton(); }
   return false;
 }
 
@@ -1133,6 +1317,7 @@ function renderAll() {
 // ==================== INIT ====================
 document.getElementById('kos-tanggal').value = new Date().toISOString().split('T')[0];
 document.getElementById('token-tanggal').value = new Date().toISOString().split('T')[0];
+initSignupValidation();
 buildPageLayout();
 window.addEventListener('hashchange', () => {
   if (sessionToken) renderRoute();
