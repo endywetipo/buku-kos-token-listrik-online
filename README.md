@@ -3,13 +3,20 @@
 Aplikasi untuk 7 pintu kos dengan pembayaran kos dan token listrik bersama.
 Data disimpan di Supabase sehingga perangkat yang berbeda dapat melihat data yang sama.
 
+## Fitur
+
+- Halaman login dan pendaftaran terpisah, dengan ikon mata untuk melihat/menyembunyikan password.
+- Halaman dashboard, daftar pembayaran kos, input kos, daftar token, input token, dan export yang terpisah.
+- Admin mengedit melalui halaman edit tersendiri dan menghapus melalui halaman konfirmasi.
+- Pengguna yang sudah login dapat mencatat pembayaran; edit dan hapus tetap dibatasi policy RLS Supabase untuk admin.
+
 ## 1. Persiapan Supabase
 
 Buka Supabase Dashboard → SQL Editor → New query.
 
 Salin seluruh isi `supabase/setup.sql`, tempel, lalu klik Run.
 
-## 2. Jalankan di Visual Studio Code
+## 2. Jalankan secara lokal
 
 Buka folder proyek ini di VS Code, lalu buka Terminal.
 
@@ -26,7 +33,7 @@ Buka alamat yang ditampilkan Vite, biasanya:
 http://localhost:5173
 ```
 
-## 3. Buat link online dengan Vercel
+## 3. Deploy ke Vercel
 
 Di terminal:
 
@@ -40,9 +47,6 @@ Ikuti pertanyaan Vercel. Setelah selesai, terminal akan memberikan URL `https://
 
 ## 4. Keamanan
 
-File ini memakai Supabase Publishable Key, bukan service-role/secret key.
-Jangan pernah memasukkan service-role key ke HTML, JavaScript browser, GitHub, atau Vercel.
+File ini memakai Supabase Publishable Key di browser, bukan service-role/secret key. Jangan pernah memasukkan service-role key ke HTML, JavaScript browser, GitHub, atau Vercel.
 
-Catatan: aplikasi publik dapat membaca dan menambah data, tetapi akses hapus publik sengaja tidak diberikan. Untuk menghapus data secara aman, tambahkan login/authentication dan policy RLS khusus admin.
-
-update fix login - trigger deploy terbaru - 2026-10-06
+Login pada antarmuka bukan pengganti keamanan database. Pastikan perubahan dan penghapusan tetap ditegakkan oleh Row Level Security di Supabase, serta email admin pada tabel `admin_emails` sesuai dengan akun pengelola.
