@@ -16,6 +16,8 @@ Buka Supabase Dashboard → SQL Editor → New query.
 
 Salin seluruh isi `supabase/setup.sql`, tempel, lalu klik Run.
 
+Untuk fitur bukti transfer BukuKosOnline PRO, jalankan juga `supabase/pro_upgrade.sql` di SQL Editor. Migrasi ini menambahkan kolom path bukti dan bucket privat JPG/PNG maksimal 2 MB. Tanpa migrasi tersebut, fitur selain upload bukti tetap dapat digunakan, tetapi penyimpanan foto belum aktif.
+
 ## 2. Jalankan secara lokal
 
 Buka folder proyek ini di VS Code, lalu buka Terminal.

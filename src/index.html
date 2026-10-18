@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#1e3a5f">
+<meta name="theme-color" content="#1e40af">
 <meta name="description" content="BukuKosOnline — pencatatan pembayaran kos dan token listrik bersama.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%231e3a5f'/%3E%3Cpath d='M20 45 50 20l30 25v35H20z' fill='%233b82f6'/%3E%3Cpath d='M42 80V55h16v25' fill='%23fff'/%3E%3Cpath d='m65 20 8 8v17l-8-7z' fill='%23facc15'/%3E%3C/svg%3E">
 <title>🏠 BukuKosOnline</title>
@@ -125,6 +125,7 @@
   .auth-card { max-width:460px; margin:18px auto 12px; }
   @media(max-width:480px) { .page-heading h2 { font-size:18px; } .page-nav button { padding:8px 10px; } }
 </style>
+<link rel="stylesheet" href="./pro.css">
 <base target="_blank">
 </head>
 <body>
@@ -330,6 +331,12 @@
         <label>Jumlah Bayar (Rp)</label>
         <input type="number" id="kos-jumlah" value="300000" min="1000" step="1000" required>
       </div>
+      <div class="form-group upload-group">
+        <label for="kos-bukti">Bukti Transfer <span class="upload-note">JPG/PNG · maksimal 2 MB · opsional</span></label>
+        <input type="file" id="kos-bukti" accept="image/jpeg,image/png" aria-label="Unggah bukti transfer pembayaran kos">
+        <div id="kos-bukti-preview" class="upload-preview hidden"></div>
+        <div id="kos-current-proof" class="upload-current hidden"></div>
+      </div>
       <button type="submit" class="btn btn-primary" style="width:100%;" id="kos-submit-button">✅ Simpan Pembayaran Kos</button>
     </form>
     <button class="btn btn-sm" style="width:100%;margin-top:8px;" onclick="navigate('/kos')">Batal / kembali ke daftar</button>
@@ -419,6 +426,12 @@
           <label>Tanggal</label>
           <input type="date" id="token-tanggal" required>
         </div>
+      </div>
+      <div class="form-group upload-group">
+        <label for="token-bukti">Bukti Pengisian <span class="upload-note">JPG/PNG · maksimal 2 MB · opsional</span></label>
+        <input type="file" id="token-bukti" accept="image/jpeg,image/png" aria-label="Unggah bukti pengisian token listrik">
+        <div id="token-bukti-preview" class="upload-preview hidden"></div>
+        <div id="token-current-proof" class="upload-current hidden"></div>
       </div>
       <button type="submit" class="btn btn-primary" style="width:100%;" id="token-submit-button">✅ Simpan Pengisian Token</button>
     </form>
@@ -1386,6 +1399,11 @@ checkSession();
 // Sinkronisasi otomatis setiap 10 detik agar semua HP/laptop melihat perubahan terbaru.
 setInterval(() => { if (sessionToken) loadData(false); }, 10000);
 </script>
+
+<script src="./vendor/chart.umd.min.js"></script>
+<script src="./vendor/fflate.umd.js"></script>
+<script src="./vendor/jspdf.umd.min.js"></script>
+<script src="./pro-upgrade.js"></script>
 
 </body>
 </html>

@@ -10,7 +10,12 @@
     "deploy": "vercel --prod"
   },
   "devDependencies": {
-    "vite": "latest",
-    "vercel": "latest"
+    "vercel": "latest",
+    "vite": "latest"
+  },
+  "dependencies": {
+    "chart.js": "^4.5.1",
+    "fflate": "^0.8.3",
+    "jspdf": "^4.2.1"
   }
 }
