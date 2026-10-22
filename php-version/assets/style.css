@@ -1,0 +1,146 @@
+:root {
+  --bk-blue: #1e40af;
+  --bk-blue-dark: #17358f;
+  --bk-blue-light: #2563eb;
+  --bk-soft: #eff6ff;
+  --bk-border: #dbeafe;
+}
+
+body {
+  background: radial-gradient(circle at 12% 0%, #dbeafe 0, #eff6ff 32%, #f5f8ff 100%);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: #15264b;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Navbar */
+.bk-navbar {
+  background: linear-gradient(120deg, #142f82 0%, #1e40af 62%, #2563eb 100%);
+  box-shadow: 0 4px 20px rgba(30,64,175,.18);
+}
+.bk-navbar .navbar-brand { font-size: 1.3rem; letter-spacing: -.5px; }
+.bk-navbar .nav-link {
+  border-radius: 8px;
+  padding: .5rem .9rem !important;
+  font-size: .9rem;
+  font-weight: 500;
+  transition: all .2s;
+}
+.bk-navbar .nav-link:hover { background: rgba(255,255,255,.12); }
+.bk-navbar .nav-link.active { background: rgba(255,255,255,.2); font-weight: 600; }
+
+/* Cards */
+.card {
+  border: 1px solid var(--bk-border);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(30,64,175,.06);
+}
+.card-header {
+  background: var(--bk-soft);
+  border-bottom: 1px solid var(--bk-border);
+  border-radius: 16px 16px 0 0 !important;
+  font-weight: 700;
+  color: var(--bk-blue-dark);
+}
+
+/* Stat cards */
+.stat-card {
+  border-radius: 16px;
+  padding: 1.5rem;
+  color: #fff;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-shadow: 0 10px 28px rgba(30,64,175,.12);
+}
+.stat-card .stat-icon { font-size: 1.8rem; opacity: .8; }
+.stat-card .stat-value { font-size: 1.7rem; font-weight: 800; letter-spacing: -.5px; }
+.stat-card .stat-label { font-size: .8rem; opacity: .85; }
+.stat-blue   { background: linear-gradient(135deg, #1e40af, #2563eb); }
+.stat-green  { background: linear-gradient(135deg, #16a34a, #15803d); }
+.stat-red    { background: linear-gradient(135deg, #dc2626, #b91c1c); }
+.stat-teal   { background: linear-gradient(135deg, #0f766e, #0e7490); }
+.stat-purple { background: linear-gradient(135deg, #4f46e5, #3730a3); }
+
+/* Buttons */
+.btn-primary {
+  background: linear-gradient(135deg, #1e40af, #2563eb);
+  border: none;
+  font-weight: 600;
+}
+.btn-primary:hover { background: linear-gradient(135deg, #17358f, #1e40af); box-shadow: 0 6px 16px rgba(30,64,175,.25); }
+.btn-success { background: linear-gradient(135deg, #16a34a, #15803d); border: none; font-weight: 600; }
+
+/* Table */
+.table thead th {
+  background: var(--bk-soft);
+  color: #254474;
+  font-size: .75rem;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  border-bottom: 2px solid var(--bk-border);
+}
+.table tbody tr:hover { background: #f8fbff; }
+
+/* Badges */
+.bk-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: .3rem .7rem;
+  border-radius: 999px;
+  font-size: .72rem;
+  font-weight: 700;
+}
+.bk-badge-lunas   { background: #bbf7d0; color: #14532d; }
+.bk-badge-belum   { background: #fecaca; color: #991b1b; }
+.bk-badge-isi     { background: #bfdbfe; color: #1e3a8a; }
+.bk-badge-kosong  { background: #e5e7eb; color: #4b5563; }
+.bk-badge-aktif   { background: #bbf7d0; color: #14532d; }
+.bk-badge-nonaktif{ background: #f3f4f6; color: #6b7280; }
+
+/* Login page */
+.login-body {
+  background: linear-gradient(135deg, #142f82, #1e40af 50%, #2563eb);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.login-card {
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 25px 60px rgba(0,0,0,.25);
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 420px;
+}
+.login-card .login-icon {
+  width: 64px; height: 64px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #1e40af, #2563eb);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 1rem;
+  font-size: 1.8rem; color: #fff;
+}
+.login-card .form-control {
+  border-radius: 10px;
+  padding: .7rem .9rem;
+  border: 1.5px solid #c9d8ee;
+}
+.login-card .form-control:focus {
+  border-color: var(--bk-blue);
+  box-shadow: 0 0 0 3px rgba(30,64,175,.12);
+}
+.login-card .btn-primary { width: 100%; padding: .7rem; font-size: 1rem; }
+
+/* Footer */
+.bk-footer { margin-top: auto; }
+
+/* Responsive */
+@media (max-width: 576px) {
+  .stat-card .stat-value { font-size: 1.3rem; }
+  .card { border-radius: 12px; }
+}
