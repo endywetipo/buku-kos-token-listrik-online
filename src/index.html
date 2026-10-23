@@ -268,6 +268,17 @@
   <div class="info">💡 Klik nomor rekening untuk copy | Kos: Rp 300.000/bulan</div>
 </div>
 
+<!-- ROLE-BASED DASHBOARD CARDS -->
+<div class="card" id="owner-summary-card" style="display:none;border:2px solid #2563eb;">
+  <div class="card-title">👥 Ringkasan Penghuni Kos</div>
+  <div id="owner-tenant-summary"></div>
+</div>
+
+<div class="card" id="tenant-personal-card" style="display:none;border:2px solid #059669;">
+  <div class="card-title">💳 Tagihan Saya Bulan Ini</div>
+  <div id="tenant-personal-summary"></div>
+</div>
+
 <!-- TABS -->
 <div class="tabs">
   <button class="tab active" onclick="switchTab('kos')">🏠 Pembayaran Kos</button>
@@ -674,6 +685,7 @@ async function createKos(e) {
     document.getElementById('kos-info-bar').classList.remove('hidden');
     setOnboardingMessage('');
     setAppVisibility(true, currentUserEmail);
+    rebuildNav();
     showToast('✅ Kos "' + nama + '" berhasil dibuat. Kode undangan: ' + kode);
     navigate('/dashboard');
     await loadData(true);
@@ -703,6 +715,7 @@ async function joinKos(e) {
     document.getElementById('kos-info-bar').classList.remove('hidden');
     setOnboardingMessage('');
     setAppVisibility(true, currentUserEmail);
+    rebuildNav();
     showToast('✅ Berhasil bergabung ke "' + (kos.nama_kos || '') + '"');
     navigate('/dashboard');
     await loadData(true);
@@ -954,18 +967,40 @@ async function checkSession() {
   } catch (err) { logoutUser(); }
 }
 
+function getDataFilters() {
+  const periode = encodeURIComponent(getCurrentPeriode());
+  if (userRole === 'owner' && userKosId) {
+    return {
+      kos: '/kos_entries?select=*&periode=eq.' + periode + '&kos_id=eq.' + encodeURIComponent(userKosId) + '&order=tanggal.desc,created_at.desc',
+      token: '/token_entries?select=*&periode=eq.' + periode + '&kos_id=eq.' + encodeURIComponent(userKosId) + '&order=tanggal.desc,created_at.desc',
+      profiles: '/profiles?select=*&kos_id=eq.' + encodeURIComponent(userKosId)
+    };
+  }
+  if (userRole === 'tenant' && currentUserUuid) {
+    return {
+      kos: '/kos_entries?select=*&periode=eq.' + periode + '&user_id=eq.' + encodeURIComponent(currentUserUuid) + '&order=tanggal.desc,created_at.desc',
+      token: '/token_entries?select=*&periode=eq.' + periode + '&user_id=eq.' + encodeURIComponent(currentUserUuid) + '&order=tanggal.desc,created_at.desc'
+    };
+  }
+  return {
+    kos: '/kos_entries?select=*&periode=eq.' + periode + '&order=tanggal.desc,created_at.desc',
+    token: '/token_entries?select=*&periode=eq.' + periode + '&order=tanggal.desc,created_at.desc'
+  };
+}
+
 async function loadData(showMessage = false) {
   if (syncing) return;
   syncing = true;
   try {
     const periode = getCurrentPeriode();
-    const [kos, token] = await Promise.all([
-      api('/kos_entries?select=*&periode=eq.' + encodeURIComponent(periode) + '&order=tanggal.desc,created_at.desc'),
-      api('/token_entries?select=*&periode=eq.' + encodeURIComponent(periode) + '&order=tanggal.desc,created_at.desc')
-    ]);
+    const filters = getDataFilters();
+    const queries = [api(filters.kos), api(filters.token)];
+    if (filters.profiles) queries.push(api(filters.profiles));
+    const results = await Promise.all(queries);
     data = {
-      kos_entries: Array.isArray(kos) ? kos : [],
-      token_entries: Array.isArray(token) ? token : [],
+      kos_entries: Array.isArray(results[0]) ? results[0] : [],
+      token_entries: Array.isArray(results[1]) ? results[1] : [],
+      tenant_profiles: results[2] && Array.isArray(results[2]) ? results[2] : [],
       periode
     };
     renderAll();
@@ -1056,9 +1091,10 @@ function renderKosRiwayat() {
     return;
   }
   const sorted = [...data.kos_entries].sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
-  let html = `<table><thead><tr><th>Tanggal</th><th>Nama</th><th>Kamar</th><th>Bulan</th><th>Jumlah</th>${isAdmin ? '<th>Aksi</th>' : ''}</tr></thead><tbody>`;
+  const canManage = isAdmin || userRole === 'owner';
+  let html = `<table><thead><tr><th>Tanggal</th><th>Nama</th><th>Kamar</th><th>Bulan</th><th>Jumlah</th>${canManage ? '<th>Aksi</th>' : ''}</tr></thead><tbody>`;
   sorted.forEach(e => {
-    const actions = isAdmin ? `<td><button class="btn btn-warning btn-sm" onclick="editKos('${e.id}')">Edit</button> <button class="btn btn-danger btn-sm" onclick="hapusKos('${e.id}')">Hapus</button></td>` : '';
+    const actions = canManage ? `<td><button class="btn btn-warning btn-sm" onclick="editKos('${e.id}')">Edit</button> <button class="btn btn-danger btn-sm" onclick="hapusKos('${e.id}')">Hapus</button></td>` : '';
     html += `<tr><td>${formatTanggal(e.tanggal)}</td><td>${escapeHtml(e.nama)}</td><td>Pintu ${e.kamar}</td><td>${escapeHtml(e.bulan)}</td><td style="font-weight:700;color:#2563eb">${formatRupiah(e.jumlah)}</td>${actions}</tr>`;
   });
   html += '</tbody></table>';
@@ -1088,6 +1124,8 @@ async function submitKos(e) {
   try {
     const isEditing = editingEntry?.type === 'kos';
     const payload = { nama, kamar, bulan, jumlah, tanggal };
+    if (currentUserUuid) payload.user_id = currentUserUuid;
+    if (userKosId) payload.kos_id = userKosId;
     if (isEditing) {
       await api('/kos_entries?id=eq.' + encodeURIComponent(editingEntry.id), { method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(payload) });
       editingEntry = null;
@@ -1149,9 +1187,10 @@ function renderTokenRiwayat() {
     return;
   }
   const sorted = [...data.token_entries].sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
-  let html = `<table><thead><tr><th>Tanggal</th><th>Nama</th><th>Kamar</th><th>Jumlah</th>${isAdmin ? '<th>Aksi</th>' : ''}</tr></thead><tbody>`;
+  const canManage = isAdmin || userRole === 'owner';
+  let html = `<table><thead><tr><th>Tanggal</th><th>Nama</th><th>Kamar</th><th>Jumlah</th>${canManage ? '<th>Aksi</th>' : ''}</tr></thead><tbody>`;
   sorted.forEach(e => {
-    const actions = isAdmin ? `<td><button class="btn btn-warning btn-sm" onclick="editToken('${e.id}')">Edit</button> <button class="btn btn-danger btn-sm" onclick="hapusToken('${e.id}')">Hapus</button></td>` : '';
+    const actions = canManage ? `<td><button class="btn btn-warning btn-sm" onclick="editToken('${e.id}')">Edit</button> <button class="btn btn-danger btn-sm" onclick="hapusToken('${e.id}')">Hapus</button></td>` : '';
     html += `<tr><td>${formatTanggal(e.tanggal)}</td><td>${escapeHtml(e.nama)}</td><td>Pintu ${e.kamar}</td><td style="font-weight:700;color:#2563eb">${formatRupiah(e.jumlah)}</td>${actions}</tr>`;
   });
   html += '</tbody></table>';
@@ -1180,6 +1219,8 @@ async function submitToken(e) {
   try {
     const isEditing = editingEntry?.type === 'token';
     const payload = { nama, kamar, jumlah, tanggal };
+    if (currentUserUuid) payload.user_id = currentUserUuid;
+    if (userKosId) payload.kos_id = userKosId;
     if (isEditing) {
       await api('/token_entries?id=eq.' + encodeURIComponent(editingEntry.id), { method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(payload) });
       editingEntry = null;
@@ -1221,6 +1262,28 @@ const routeItems = [
   { path: '/token/tambah', label: '＋ Input Token' },
   { path: '/export', label: '📤 Export' }
 ];
+const tenantRouteItems = [
+  { path: '/dashboard', label: '📊 Dashboard' },
+  { path: '/kos/tambah', label: '＋ Bayar Kos' },
+  { path: '/token/tambah', label: '＋ Isi Token' },
+  { path: '/export', label: '📤 Export' }
+];
+function getRouteItems() {
+  return userRole === 'tenant' ? tenantRouteItems : routeItems;
+}
+
+function rebuildNav() {
+  const nav = document.getElementById('app-navigation');
+  if (!nav) return;
+  nav.innerHTML = '';
+  getRouteItems().forEach(item => {
+    const button = document.createElement('button');
+    button.type = 'button'; button.textContent = item.label;
+    button.dataset.route = item.path;
+    button.addEventListener('click', () => navigate(item.path));
+    nav.appendChild(button);
+  });
+}
 const pages = {};
 
 function makePage(path, title, description) {
@@ -1251,6 +1314,10 @@ function buildPageLayout() {
   pages['/delete'] = deletePage;
 
   dashboard.append(kosCards[0], tokenCards[0], kosCards[1], tokenCards[1]);
+  const ownerCard = document.getElementById('owner-summary-card');
+  const tenantCard = document.getElementById('tenant-personal-card');
+  if (ownerCard) dashboard.appendChild(ownerCard);
+  if (tenantCard) dashboard.appendChild(tenantCard);
   kosList.appendChild(kosCards[3]);
   kosAdd.appendChild(kosCards[2]);
   tokenList.appendChild(tokenCards[3]);
@@ -1267,14 +1334,7 @@ function buildPageLayout() {
 
   kosTab.remove(); tokenTab.remove();
   document.querySelector('.tabs')?.remove();
-  const nav = document.getElementById('app-navigation');
-  routeItems.forEach(item => {
-    const button = document.createElement('button');
-    button.type = 'button'; button.textContent = item.label;
-    button.dataset.route = item.path;
-    button.addEventListener('click', () => navigate(item.path));
-    nav.appendChild(button);
-  });
+  rebuildNav();
 
   const intro = document.createElement('div');
   intro.className = 'page-intro';
@@ -1333,16 +1393,16 @@ function renderRoute(forcedRoute) {
   if (route.startsWith('/kos/edit/')) {
     const id = route.split('/').pop();
     const item = data.kos_entries.find(entry => String(entry.id) === id);
-    if (!isAdmin || !item) { route = '/kos'; } else { prepareKosEditor(item); route = '/kos/tambah'; title = 'Edit Pembayaran Kos'; }
+    if (!item || (!isAdmin && userRole !== 'owner')) { route = '/kos'; } else { prepareKosEditor(item); route = '/kos/tambah'; title = 'Edit Pembayaran Kos'; }
   } else if (route.startsWith('/token/edit/')) {
     const id = route.split('/').pop();
     const item = data.token_entries.find(entry => String(entry.id) === id);
-    if (!isAdmin || !item) { route = '/token'; } else { prepareTokenEditor(item); route = '/token/tambah'; title = 'Edit Pengisian Token'; }
+    if (!item || (!isAdmin && userRole !== 'owner')) { route = '/token'; } else { prepareTokenEditor(item); route = '/token/tambah'; title = 'Edit Pengisian Token'; }
   } else if (route.startsWith('/kos/delete/') || route.startsWith('/token/delete/')) {
     const parts = route.split('/');
     const type = parts[1] === 'kos' ? 'kos' : 'token';
     const item = data[type + '_entries'].find(entry => String(entry.id) === parts[3]);
-    if (!isAdmin || !item) { route = type === 'kos' ? '/kos' : '/token'; }
+    if (!item || (!isAdmin && userRole !== 'owner')) { route = type === 'kos' ? '/kos' : '/token'; }
     else { deleteTarget = { type, id: String(item.id) }; showDeleteDetails(item, type); route = '/delete'; }
   }
   const page = pages[route];
@@ -1404,14 +1464,14 @@ function startCreate(type) {
   }
 }
 function openEditor(type, id) {
-  if (!isAdmin) { showToast('Hanya admin yang dapat mengedit data.'); return; }
+  if (!isAdmin && userRole !== 'owner') { showToast('Hanya admin atau pemilik kos yang dapat mengedit data.'); return; }
   const item = data[type + '_entries'].find(entry => String(entry.id) === String(id));
   if (!item) return;
   if (type === 'kos') prepareKosEditor(item); else prepareTokenEditor(item);
   navigate(`/${type}/edit/${encodeURIComponent(id)}`);
 }
 function openDeletePage(type, id) {
-  if (!isAdmin) { showToast('Hanya admin yang dapat menghapus data.'); return; }
+  if (!isAdmin && userRole !== 'owner') { showToast('Hanya admin atau pemilik kos yang dapat menghapus data.'); return; }
   navigate(`/${type}/delete/${encodeURIComponent(id)}`);
 }
 function showDeleteDetails(item, type) {
@@ -1428,7 +1488,7 @@ function showDeleteDetails(item, type) {
     : `${item.nama} • Pintu ${item.kamar} • ${formatRupiah(item.jumlah)} • ${formatTanggal(item.tanggal)}`;
 }
 async function confirmDelete() {
-  if (!deleteTarget || !isAdmin) return;
+  if (!deleteTarget || (!isAdmin && userRole !== 'owner')) return;
   const { type, id } = deleteTarget;
   const endpoint = type === 'kos' ? 'kos_entries' : 'token_entries';
   try {
@@ -1554,6 +1614,75 @@ function escapeHtml(value) {
 
 function renderAll() {
   renderKosStats(); renderKosKamar(); renderKosRiwayat(); renderTokenStats(); renderTokenKamar(); renderTokenRiwayat();
+  updateRoleBasedUI();
+}
+
+function updateRoleBasedUI() {
+  const ownerCard = document.getElementById('owner-summary-card');
+  const tenantCard = document.getElementById('tenant-personal-card');
+  if (!ownerCard || !tenantCard) return;
+  ownerCard.style.display = (userRole === 'owner') ? '' : 'none';
+  tenantCard.style.display = (userRole === 'tenant') ? '' : 'none';
+  if (userRole === 'owner') renderOwnerSummary();
+  if (userRole === 'tenant') renderTenantDashboard();
+}
+
+function renderOwnerSummary() {
+  const container = document.getElementById('owner-tenant-summary');
+  if (!container) return;
+  const profiles = data.tenant_profiles || [];
+  if (profiles.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">👤</div><p>Belum ada penyewa yang bergabung</p><p style="font-size:11px;">Bagikan kode undangan untuk menambah penyewa</p></div>';
+    return;
+  }
+  const kosSummary = getKamarSummaryKos();
+  const tokenSummary = getKamarSummaryToken();
+  let html = '<table><thead><tr><th>Nama</th><th>Role</th><th>Kos</th><th>Token</th></tr></thead><tbody>';
+  profiles.forEach(p => {
+    const kamarLabel = p.kamar ? 'Pintu ' + p.kamar : '-';
+    const kosPaid = data.kos_entries.some(e => e.user_id === p.id);
+    const tokenPaid = data.token_entries.some(e => e.user_id === p.id);
+    html += '<tr><td>' + escapeHtml(p.full_name || p.id?.slice(0,8) || '?') + '</td><td>' + escapeHtml(p.role || '-') + '</td>';
+    html += '<td>' + (kosPaid ? '✅ Lunas' : '❌ Belum') + '</td>';
+    html += '<td>' + (tokenPaid ? '✅ Sudah' : '❌ Belum') + '</td></tr>';
+  });
+  html += '</tbody></table>';
+  const totalKos = data.kos_entries.reduce((s, e) => s + Number(e.jumlah || 0), 0);
+  const totalToken = data.token_entries.reduce((s, e) => s + Number(e.jumlah || 0), 0);
+  html += '<div class="stats-grid" style="margin-top:12px;">';
+  html += '<div class="stat-box blue"><div class="stat-value">' + formatRupiah(totalKos) + '</div><div class="stat-label">Total Kos Masuk</div></div>';
+  html += '<div class="stat-box teal"><div class="stat-value">' + formatRupiah(totalToken) + '</div><div class="stat-label">Total Token Masuk</div></div>';
+  html += '<div class="stat-box green"><div class="stat-value">' + profiles.length + '</div><div class="stat-label">Jumlah Penyewa</div></div>';
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function renderTenantDashboard() {
+  const container = document.getElementById('tenant-personal-summary');
+  if (!container) return;
+  const myKos = data.kos_entries.filter(e => e.user_id === currentUserUuid);
+  const myToken = data.token_entries.filter(e => e.user_id === currentUserUuid);
+  const kosPaid = myKos.length > 0;
+  const kosTotal = myKos.reduce((s, e) => s + Number(e.jumlah || 0), 0);
+  const tokenTotal = myToken.reduce((s, e) => s + Number(e.jumlah || 0), 0);
+  let html = '<div class="stats-grid">';
+  html += '<div class="stat-box ' + (kosPaid ? 'green' : 'red') + '"><div class="stat-value">' + (kosPaid ? '✅ Lunas' : '❌ Belum') + '</div><div class="stat-label">Status Kos</div></div>';
+  html += '<div class="stat-box blue"><div class="stat-value">' + formatRupiah(kosTotal) + '</div><div class="stat-label">Total Kos Dibayar</div></div>';
+  html += '<div class="stat-box teal"><div class="stat-value">' + formatRupiah(tokenTotal) + '</div><div class="stat-label">Total Token Diisi</div></div>';
+  html += '</div>';
+  if (!kosPaid) {
+    html += '<div class="info-text" style="background:#fef2f2;color:#dc2626;padding:10px;border-radius:8px;margin-top:10px;">⚠️ Kos bulan ini belum dibayar. Bayar Rp 300.000 ke rekening BRI 794101019781531 a.n. Kakak Keli.</div>';
+  }
+  if (myKos.length > 0 || myToken.length > 0) {
+    html += '<div style="margin-top:12px;"><strong>Riwayat Pembayaran Saya:</strong></div><table><thead><tr><th>Tanggal</th><th>Jenis</th><th>Jumlah</th></tr></thead><tbody>';
+    [...myKos.map(e => ({...e, jenis: 'Kos'})), ...myToken.map(e => ({...e, jenis: 'Token'}))]
+      .sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal))
+      .forEach(e => {
+        html += '<tr><td>' + formatTanggal(e.tanggal) + '</td><td>' + e.jenis + '</td><td style="font-weight:700;color:#2563eb">' + formatRupiah(e.jumlah) + '</td></tr>';
+      });
+    html += '</tbody></table>';
+  }
+  container.innerHTML = html;
 }
 
 // ==================== INIT ====================
