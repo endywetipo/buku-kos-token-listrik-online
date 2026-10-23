@@ -271,21 +271,23 @@
 <!-- ROLE-BASED DASHBOARD CARDS -->
 <div class="card" id="owner-summary-card" style="display:none;border:2px solid #2563eb;">
   <div class="card-title">👥 Ringkasan Penghuni Kos</div>
+  <div id="owner-payment-status" class="info-text" style="margin-bottom:10px;font-weight:700;color:#b91c1c;">Status Pembayaran: memuat…</div>
   <div id="owner-tenant-summary"></div>
   <div id="auto-split-section" style="margin-top:16px;border-top:1px solid #e2e8f0;padding-top:16px;">
-    <div class="card-title" style="margin-bottom:8px;">⚡ Beli Token Bersama & Bagi Rata</div>
+    <div class="card-title" style="margin-bottom:8px;">⚡ Beli Token & Bagi Rata</div>
     <form id="form-auto-split" onsubmit="return submitAutoSplitToken(event)">
       <div class="form-row">
         <div class="form-group">
-          <label>Total Token (Rp)</label>
-          <input type="number" id="split-jumlah" placeholder="Contoh: 200000" min="1000" step="1000" required>
+          <label>Jumlah Token (Rp)</label>
+          <input type="number" id="split-jumlah" placeholder="Contoh: 600000" min="1" step="1" oninput="updateTokenSplitPreview()" required>
         </div>
         <div class="form-group">
-          <label>Tanggal Beli</label>
-          <input type="date" id="split-tanggal" required>
+          <label>Jumlah Pintu</label>
+          <input type="number" id="split-pintu" value="6" min="1" step="1" oninput="updateTokenSplitPreview()" required>
         </div>
       </div>
-      <button type="submit" class="btn btn-primary" style="width:100%;">🔀 Bagi Rata ke Semua Penghuni</button>
+      <div id="split-preview" class="info-text" style="margin:0 0 10px;">Bagian per pintu: —</div>
+      <button type="submit" class="btn btn-primary" style="width:100%;">Beli Token & Bagi Rata</button>
     </form>
     <div id="split-result" style="margin-top:10px;"></div>
   </div>
@@ -545,7 +547,7 @@ const NOMOR_TOKEN_LISTRIK = '56707933430';
 const API_BASE = SUPABASE_URL + '/rest/v1';
 const AUTH_BASE = SUPABASE_URL + '/auth/v1';
 
-let data = { kos_entries: [], token_entries: [], periode: getCurrentPeriode() };
+let data = { kos_entries: [], token_entries: [], tagihan_token: [], unpaid_token_count: null, periode: getCurrentPeriode() };
 let syncing = false;
 let sessionToken = localStorage.getItem('bukukos_session') || '';
 let currentUserEmail = '';
@@ -568,6 +570,11 @@ function getCurrentPeriode() {
   return now.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
 }
 
+function getCurrentTagihanPeriode() {
+  const now = new Date();
+  return now.toLocaleString('id-ID', { month: 'short', year: 'numeric' });
+}
+
 function getCurrentBulan() {
   const now = new Date();
   return now.toLocaleString('id-ID', { month: 'long' });
@@ -585,6 +592,19 @@ async function api(path, options = {}) {
   if (response.status === 204) return null;
   const text = await response.text();
   return text ? JSON.parse(text) : null;
+}
+
+async function countUnpaidTokenBills(kosId) {
+  const url = API_BASE + '/tagihan_token?select=id&kos_id=eq.' + encodeURIComponent(kosId) + '&status=eq.belum_lunas';
+  const response = await fetch(url, {
+    method: 'HEAD',
+    headers: { ...getSupabaseHeaders(), 'Prefer': 'count=exact', 'Range': '0-0' }
+  });
+  if (!response.ok) throw new Error(await response.text() || ('HTTP ' + response.status));
+  const contentRange = response.headers.get('Content-Range') || '';
+  const match = contentRange.match(/\/(\d+)$/);
+  if (!match) throw new Error('COUNT exact tidak tersedia dari tagihan_token.');
+  return Number(match[1]);
 }
 
 function setAuthMessage(message) {
@@ -1018,8 +1038,23 @@ async function loadData(showMessage = false) {
       kos_entries: Array.isArray(results[0]) ? results[0] : [],
       token_entries: Array.isArray(results[1]) ? results[1] : [],
       tenant_profiles: results[2] && Array.isArray(results[2]) ? results[2] : [],
+      tagihan_token: [],
+      unpaid_token_count: null,
       periode
     };
+    if (userRole === 'tenant' && currentUserUuid) {
+      try {
+        data.tagihan_token = await api('/tagihan_token?select=*&user_id=eq.' + encodeURIComponent(currentUserUuid) + '&status=eq.belum_lunas&order=created_at.desc');
+      } catch (tagihanError) {
+        console.warn('Gagal memuat tagihan_token:', tagihanError.message);
+      }
+    } else if (userRole === 'owner' && userKosId) {
+      try {
+        data.unpaid_token_count = await countUnpaidTokenBills(userKosId);
+      } catch (tagihanError) {
+        console.warn('Gagal menghitung tagihan_token:', tagihanError.message);
+      }
+    }
     renderAll();
     if (showMessage) showToast('☁️ Data berhasil disinkronkan.');
   } catch (e) {
@@ -1647,6 +1682,12 @@ function updateRoleBasedUI() {
 function renderOwnerSummary() {
   const container = document.getElementById('owner-tenant-summary');
   if (!container) return;
+  const paymentStatus = document.getElementById('owner-payment-status');
+  if (paymentStatus) {
+    paymentStatus.textContent = data.unpaid_token_count === null
+      ? 'Status Pembayaran: data tagihan belum tersedia'
+      : 'Status Pembayaran: Belum lunas ' + data.unpaid_token_count + ' pintu';
+  }
   const profiles = data.tenant_profiles || [];
   if (profiles.length === 0) {
     container.innerHTML = '<div class="empty-state"><div class="icon">👤</div><p>Belum ada penyewa yang bergabung</p><p style="font-size:11px;">Bagikan kode undangan untuk menambah penyewa</p></div>';
@@ -1690,6 +1731,12 @@ function renderTenantDashboard() {
   html += '<div class="stat-box blue"><div class="stat-value">' + formatRupiah(kosTotal) + '</div><div class="stat-label">Total Kos Dibayar</div></div>';
   html += '<div class="stat-box teal"><div class="stat-value">' + formatRupiah(tokenTotalLunas) + '</div><div class="stat-label">Token Sudah Bayar</div></div>';
   html += '</div>';
+  const tagihanToken = data.tagihan_token || [];
+  tagihanToken.forEach(tagihan => {
+    html += '<div class="info-text" style="background:#fef3c7;color:#92400e;padding:10px;border-radius:8px;margin-top:10px;">';
+    html += 'Tagihan Token ' + escapeHtml(tagihan.periode || '') + ': <strong>' + formatRupiah(tagihan.jumlah) + '</strong> - Belum Lunas';
+    html += '<div style="margin-top:8px;"><button class="btn btn-success btn-sm" onclick="markTagihanTokenPaid(\'' + escapeHtml(tagihan.id) + '\')">Saya Sudah Bayar</button></div></div>';
+  });
   if (tokenBelum.length > 0) {
     html += '<div class="info-text" style="background:#fef3c7;color:#b45309;padding:10px;border-radius:8px;margin-top:10px;">';
     html += '⚠️ Ada ' + tokenBelum.length + ' tagihan token belum lunas. Total: <strong>' + formatRupiah(tokenTotalBelum) + '</strong></div>';
@@ -1728,55 +1775,90 @@ async function markTokenPaid(id) {
   }
 }
 
+async function markTagihanTokenPaid(id) {
+  try {
+    await api('/tagihan_token?id=eq.' + encodeURIComponent(id) + '&user_id=eq.' + encodeURIComponent(currentUserUuid) + '&status=eq.belum_lunas', {
+      method: 'PATCH',
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ status: 'lunas' })
+    });
+    showToast('✅ Pembayaran token ditandai sudah dibayar.');
+    await loadData();
+  } catch (err) {
+    console.error(err);
+    showToast('❌ Gagal memperbarui status tagihan token.');
+  }
+}
+
+function updateTokenSplitPreview() {
+  const jumlah = Number(document.getElementById('split-jumlah')?.value || 0);
+  const pintu = Number(document.getElementById('split-pintu')?.value || 0);
+  const preview = document.getElementById('split-preview');
+  if (!preview) return;
+  if (!Number.isInteger(jumlah) || jumlah <= 0 || !Number.isInteger(pintu) || pintu <= 0) {
+    preview.textContent = 'Bagian per pintu: —';
+    return;
+  }
+  const dasar = Math.floor(jumlah / pintu);
+  const sisa = jumlah % pintu;
+  preview.textContent = sisa
+    ? 'Bagian per pintu: ' + formatRupiah(dasar) + '–' + formatRupiah(dasar + 1) + ' (selisih pembulatan)'
+    : 'Bagian per pintu: ' + formatRupiah(dasar);
+}
+
 async function submitAutoSplitToken(e) {
   e.preventDefault();
-  const jumlah = parseInt(document.getElementById('split-jumlah').value);
-  const tanggal = document.getElementById('split-tanggal').value;
-  if (!jumlah || !tanggal) { showToast('❌ Isi jumlah dan tanggal.'); return false; }
+  const jumlah = Number(document.getElementById('split-jumlah').value);
+  const jumlahPintu = Number(document.getElementById('split-pintu').value);
+  if (!Number.isInteger(jumlah) || jumlah <= 0 || !Number.isInteger(jumlahPintu) || jumlahPintu <= 0) {
+    showToast('❌ Isi jumlah token dan jumlah pintu yang valid.');
+    return false;
+  }
   if (userRole !== 'owner' || !userKosId) { showToast('❌ Hanya pemilik kos yang dapat membagi token.'); return false; }
 
   const profiles = data.tenant_profiles || [];
-  if (profiles.length === 0) { showToast('❌ Belum ada penyewa untuk dibagi tagihan.'); return false; }
-
-  const tenants = profiles.filter(p => p.role === 'tenant' || p.role === 'owner');
-  const totalTenant = tenants.length;
-  const perOrang = Math.ceil(jumlah / totalTenant);
+  const tenants = profiles.filter(p => p.role === 'tenant' && String(p.kos_id) === String(userKosId));
+  if (tenants.length === 0) { showToast('❌ Belum ada penyewa untuk dibagi tagihan.'); return false; }
+  if (tenants.length !== jumlahPintu) {
+    showToast('❌ Jumlah pintu harus sama dengan jumlah penyewa terdaftar (' + tenants.length + ').');
+    return false;
+  }
 
   try {
-    const periode = getCurrentPeriode();
-    const insertPromises = tenants.map(t => {
-      const payload = {
-        nama: t.full_name || 'Penghuni',
-        kamar: t.kamar || 0,
-        jumlah: perOrang,
-        nomor_token: NOMOR_TOKEN_LISTRIK,
-        tanggal: tanggal,
-        periode: periode,
-        user_id: t.id,
-        kos_id: userKosId,
-        status: 'belum_lunas'
-      };
-      return api('/token_entries', { method: 'POST', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(payload) });
+    const periode = getCurrentTagihanPeriode();
+    const perPintu = Math.floor(jumlah / jumlahPintu);
+    const sisa = jumlah % jumlahPintu;
+    const tagihan = tenants.map((tenant, index) => ({
+      kos_id: userKosId,
+      user_id: tenant.id,
+      jumlah: perPintu + (index < sisa ? 1 : 0),
+      periode,
+      status: 'belum_lunas'
+    }));
+    await api('/tagihan_token', {
+      method: 'POST',
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify(tagihan)
     });
-    await Promise.all(insertPromises);
 
     const resultDiv = document.getElementById('split-result');
     if (resultDiv) {
       let html = '<div class="info-text" style="background:#ecfdf5;color:#059669;padding:10px;border-radius:8px;">';
-      html += '✅ Token ' + formatRupiah(jumlah) + ' dibagi ke ' + totalTenant + ' penghuni.';
-      html += '<br>Tagihan per orang: <strong>' + formatRupiah(perOrang) + '</strong>';
+      html += '✅ Token ' + formatRupiah(jumlah) + ' dibagi ke ' + jumlahPintu + ' pintu.';
+      html += '<br>Tagihan per orang: <strong>' + formatRupiah(perPintu) + (sisa ? '–' + formatRupiah(perPintu + 1) : '') + '</strong>';
       html += '</div>';
       html += '<table style="margin-top:8px;"><thead><tr><th>Nama</th><th>Tagihan</th><th>Status</th></tr></thead><tbody>';
-      tenants.forEach(t => {
-        html += '<tr><td>' + escapeHtml(t.full_name || t.id?.slice(0,8) || '?') + '</td><td>' + formatRupiah(perOrang) + '</td><td style="color:#dc2626;font-weight:700;">Belum Lunas</td></tr>';
+      tenants.forEach((tenant, index) => {
+        const jumlahOrang = perPintu + (index < sisa ? 1 : 0);
+        html += '<tr><td>' + escapeHtml(tenant.full_name || tenant.id?.slice(0,8) || '?') + '</td><td>' + formatRupiah(jumlahOrang) + '</td><td style="color:#dc2626;font-weight:700;">Belum Lunas</td></tr>';
       });
       html += '</tbody></table>';
       resultDiv.innerHTML = html;
     }
 
     document.getElementById('form-auto-split').reset();
-    document.getElementById('split-tanggal').value = new Date().toISOString().split('T')[0];
-    showToast('✅ Token ' + formatRupiah(jumlah) + ' dibagi rata ke ' + totalTenant + ' penghuni!');
+    updateTokenSplitPreview();
+    showToast('✅ Token ' + formatRupiah(jumlah) + ' dibagi rata ke ' + jumlahPintu + ' pintu!');
     await loadData();
   } catch (err) {
     console.error(err);
@@ -1788,7 +1870,7 @@ async function submitAutoSplitToken(e) {
 // ==================== INIT ====================
 document.getElementById('kos-tanggal').value = new Date().toISOString().split('T')[0];
 document.getElementById('token-tanggal').value = new Date().toISOString().split('T')[0];
-document.getElementById('split-tanggal').value = new Date().toISOString().split('T')[0];
+updateTokenSplitPreview();
 initSignupValidation();
 buildPageLayout();
 window.addEventListener('hashchange', () => {
