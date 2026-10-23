@@ -218,9 +218,47 @@
   <div id="signup-message" class="auth-error hidden" role="status" aria-live="polite"></div>
 </div>
 <div id="user-bar" class="user-bar hidden"><span id="user-email"></span><button class="btn btn-sm" onclick="logoutUser()">Keluar</button></div>
+
+<div id="onboarding-panel" class="auth-card hidden">
+  <h2> SELAMAT DATANG</h2>
+  <p class="auth-note">Sebelum mulai, pilih peran Anda: pemilik kos atau penyewa (penghuni).</p>
+  <div class="onboarding-tabs" id="onboarding-tabs">
+    <button type="button" class="onboarding-tab active" data-role="owner" onclick="switchOnboardingTab('owner')">Pemilik Kos</button>
+    <button type="button" class="onboarding-tab" data-role="tenant" onclick="switchOnboardingTab('tenant')">Penyewa</button>
+  </div>
+  <div id="onboarding-owner" class="onboarding-section">
+    <form id="onboarding-owner-form" onsubmit="return createKos(event)">
+      <div class="form-group">
+        <label for="kos-nama">Nama Kos</label>
+        <input type="text" id="kos-nama" placeholder="Contoh: Kos Endy Barokah" required>
+      </div>
+      <div class="form-group">
+        <label for="kos-kota">Kota</label>
+        <input type="text" id="kos-kota" placeholder="Contoh: Depok" required>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;">Buat Kos</button>
+    </form>
+    <p class="auth-note" style="margin-top:10px;">Kode undangan akan dibuat otomatis. Bagikan ke penyewa untuk bergabung.</p>
+  </div>
+  <div id="onboarding-tenant" class="onboarding-section hidden">
+    <form id="onboarding-tenant-form" onsubmit="return joinKos(event)">
+      <div class="form-group">
+        <label for="kos-kode">Kode Undangan</label>
+        <input type="text" id="kos-kode" placeholder="Masukkan kode dari pemilik kos" required>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;">Gabung Kos</button>
+    </form>
+  </div>
+  <div id="onboarding-message" class="auth-error hidden" role="status" aria-live="polite"></div>
+</div>
 <div id="online-status" class="hidden" style="background:#dcfce7;color:#166534;border-radius:10px;padding:8px 12px;margin-bottom:10px;text-align:center;font-size:12px;font-weight:700;">☁️ Mode Online — data dibagikan ke semua teman</div>
 <nav id="app-navigation" class="page-nav hidden" aria-label="Navigasi utama"></nav>
 <main id="page-container" class="hidden"></main>
+
+<div id="kos-info-bar" class="user-bar hidden" style="background:#dcfce7;color:#166534;">
+  <span id="kos-info-name"></span>
+  <span id="kos-info-code" style="font-weight:700;cursor:pointer;" onclick="copyInviteCode()"></span>
+</div>
 
 <!-- REKENING -->
 <div class="rek-box">
@@ -483,7 +521,11 @@ let data = { kos_entries: [], token_entries: [], periode: getCurrentPeriode() };
 let syncing = false;
 let sessionToken = localStorage.getItem('bukukos_session') || '';
 let currentUserEmail = '';
+let currentUserUuid = '';
 let isAdmin = false;
+let userProfile = null;
+let userKosId = null;
+let userRole = null;
 
 function getSupabaseHeaders() {
   return {
@@ -546,13 +588,132 @@ async function checkAdmin(email) {
 }
 
 function setAppVisibility(loggedIn, email = '') {
-  document.getElementById('auth-panel').classList.toggle('hidden', loggedIn || (location.hash.replace(/^#/, '') === '/signup'));
-  document.getElementById('signup-panel').classList.toggle('hidden', loggedIn || (location.hash.replace(/^#/, '') !== '/signup'));
+  const route = location.hash.replace(/^#/, '') || '/login';
+  document.getElementById('auth-panel').classList.toggle('hidden', loggedIn || route === '/signup');
+  document.getElementById('signup-panel').classList.toggle('hidden', loggedIn || route !== '/signup');
   document.getElementById('user-bar').classList.toggle('hidden', !loggedIn);
   document.getElementById('online-status').classList.toggle('hidden', !loggedIn);
-  document.getElementById('app-navigation').classList.toggle('hidden', !loggedIn);
-  document.getElementById('page-container').classList.toggle('hidden', !loggedIn);
+  document.getElementById('onboarding-panel').classList.toggle('hidden', !loggedIn || userProfile !== null);
+  document.getElementById('app-navigation').classList.toggle('hidden', !loggedIn || userProfile === null);
+  document.getElementById('page-container').classList.toggle('hidden', !loggedIn || userProfile === null);
+  document.getElementById('kos-info-bar').classList.toggle('hidden', !loggedIn || !userProfile || !userProfile.kos_id);
   document.getElementById('user-email').textContent = loggedIn ? '👤 ' + email : '';
+}
+
+function setOnboardingMessage(message) {
+  const el = document.getElementById('onboarding-message');
+  if (!el) return;
+  el.textContent = message || '';
+  el.classList.toggle('hidden', !message);
+}
+
+function switchOnboardingTab(role) {
+  document.querySelectorAll('#onboarding-tabs .onboarding-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.role === role);
+  });
+  document.getElementById('onboarding-owner').classList.toggle('hidden', role !== 'owner');
+  document.getElementById('onboarding-tenant').classList.toggle('hidden', role !== 'tenant');
+  setOnboardingMessage('');
+}
+
+async function checkProfile() {
+  if (!sessionToken) return null;
+  try {
+    const response = await fetch(AUTH_BASE + '/user', { headers: getSupabaseHeaders() });
+    if (!response.ok) return null;
+    const user = await response.json();
+    currentUserUuid = user.id;
+    const rows = await api('/profiles?select=*&id=eq.' + encodeURIComponent(user.id));
+    if (Array.isArray(rows) && rows.length > 0) {
+      userProfile = rows[0];
+      userKosId = userProfile.kos_id || null;
+      userRole = userProfile.role || null;
+      if (userKosId) {
+        const kosRows = await api('/kos?select=*&id=eq.' + encodeURIComponent(userKosId));
+        if (Array.isArray(kosRows) && kosRows.length > 0) {
+          const bar = document.getElementById('kos-info-bar');
+          document.getElementById('kos-info-name').textContent = '🏠 ' + (kosRows[0].nama_kos || '') + (kosRows[0].kota ? ' — ' + kosRows[0].kota : '');
+          document.getElementById('kos-info-code').textContent = 'Kode: ' + (kosRows[0].kode_undangan || '');
+          bar.classList.remove('hidden');
+        }
+      }
+      return userProfile;
+    }
+  } catch (err) { console.warn('checkProfile error:', err.message); }
+  return null;
+}
+
+function generateInviteCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+
+async function createKos(e) {
+  e.preventDefault();
+  setOnboardingMessage('Membuat kos...');
+  const nama = document.getElementById('kos-nama').value.trim();
+  const kota = document.getElementById('kos-kota').value.trim();
+  if (!nama || !kota) { setOnboardingMessage('Nama kos dan kota wajib diisi.'); return false; }
+  try {
+    const kode = generateInviteCode();
+    const kosRows = await api('/kos', { method: 'POST', headers: { 'Prefer': 'return=representation' }, body: JSON.stringify({ owner_id: currentUserUuid, nama_kos: nama, kota: kota, kode_undangan: kode }) });
+    const newKos = Array.isArray(kosRows) ? kosRows[0] : kosRows;
+    if (!newKos || !newKos.id) throw new Error('Gagal membuat kos');
+    const existingProfile = await api('/profiles?select=*&id=eq.' + encodeURIComponent(currentUserUuid));
+    if (Array.isArray(existingProfile) && existingProfile.length > 0) {
+      await api('/profiles?id=eq.' + encodeURIComponent(currentUserUuid), { method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify({ kos_id: newKos.id, role: 'owner' }) });
+    } else {
+      await api('/profiles', { method: 'POST', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify({ id: currentUserUuid, kos_id: newKos.id, role: 'owner' }) });
+    }
+    userProfile = { id: currentUserUuid, kos_id: newKos.id, role: 'owner' };
+    userKosId = newKos.id; userRole = 'owner';
+    document.getElementById('kos-info-name').textContent = '🏠 ' + nama + ' — ' + kota;
+    document.getElementById('kos-info-code').textContent = 'Kode: ' + kode;
+    document.getElementById('kos-info-bar').classList.remove('hidden');
+    setOnboardingMessage('');
+    setAppVisibility(true, currentUserEmail);
+    showToast('✅ Kos "' + nama + '" berhasil dibuat. Kode undangan: ' + kode);
+    navigate('/dashboard');
+    await loadData(true);
+  } catch (err) { setOnboardingMessage('❌ ' + err.message); }
+  return false;
+}
+
+async function joinKos(e) {
+  e.preventDefault();
+  setOnboardingMessage('Mencari kos...');
+  const kode = document.getElementById('kos-kode').value.trim();
+  if (!kode) { setOnboardingMessage('Kode undangan wajib diisi.'); return false; }
+  try {
+    const kosRows = await api('/kos?select=*&kode_undangan=eq.' + encodeURIComponent(kode));
+    if (!Array.isArray(kosRows) || kosRows.length === 0) { setOnboardingMessage('❌ Kode undangan tidak ditemukan.'); return false; }
+    const kos = kosRows[0];
+    const existingProfile = await api('/profiles?select=*&id=eq.' + encodeURIComponent(currentUserUuid));
+    if (Array.isArray(existingProfile) && existingProfile.length > 0) {
+      await api('/profiles?id=eq.' + encodeURIComponent(currentUserUuid), { method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify({ kos_id: kos.id, role: 'tenant' }) });
+    } else {
+      await api('/profiles', { method: 'POST', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify({ id: currentUserUuid, kos_id: kos.id, role: 'tenant' }) });
+    }
+    userProfile = { id: currentUserUuid, kos_id: kos.id, role: 'tenant' };
+    userKosId = kos.id; userRole = 'tenant';
+    document.getElementById('kos-info-name').textContent = '🏠 ' + (kos.nama_kos || '') + (kos.kota ? ' — ' + kos.kota : '');
+    document.getElementById('kos-info-code').textContent = 'Kode: ' + (kos.kode_undangan || '');
+    document.getElementById('kos-info-bar').classList.remove('hidden');
+    setOnboardingMessage('');
+    setAppVisibility(true, currentUserEmail);
+    showToast('✅ Berhasil bergabung ke "' + (kos.nama_kos || '') + '"');
+    navigate('/dashboard');
+    await loadData(true);
+  } catch (err) { setOnboardingMessage('❌ ' + err.message); }
+  return false;
+}
+
+function copyInviteCode() {
+  const text = document.getElementById('kos-info-code').textContent.replace('Kode: ', '');
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => showToast('✅ Kode undangan disalin: ' + text)).catch(() => showToast('Kode: ' + text));
 }
 
 async function loginUser(e) {
@@ -571,9 +732,17 @@ async function loginUser(e) {
     localStorage.setItem('bukukos_session', sessionToken);
     currentUserEmail = result.user?.email || email;
     await checkAdmin(currentUserEmail);
-    setAuthMessage(''); setAppVisibility(true, currentUserEmail);
-    navigate('/dashboard');
-    await loadData(true);
+    currentUserUuid = result.user?.id || '';
+    const profile = await checkProfile();
+    setAuthMessage('');
+    if (profile) {
+      setAppVisibility(true, currentUserEmail);
+      navigate('/dashboard');
+      await loadData(true);
+    } else {
+      setAppVisibility(true, currentUserEmail);
+      showToast('Selamat datang! Silakan lengkapi data kos Anda.');
+    }
   } catch (err) { setAuthMessage('❌ ' + err.message); }
   return false;
 }
@@ -759,7 +928,7 @@ async function signupUser(e) {
 }
 
 function logoutUser() {
-  sessionToken = ''; isAdmin = false; currentUserEmail = '';
+  sessionToken = ''; isAdmin = false; currentUserEmail = ''; currentUserUuid = ''; userProfile = null; userKosId = null; userRole = null;
   localStorage.removeItem('bukukos_session');
   navigate('/login');
   setAppVisibility(false);
@@ -776,8 +945,12 @@ async function checkSession() {
     if (!response.ok) throw new Error('Sesi berakhir');
     const user = await response.json();
     currentUserEmail = user.email || 'pengguna';
+    currentUserUuid = user.id || '';
     await checkAdmin(currentUserEmail);
-    setAppVisibility(true, currentUserEmail); await loadData(true); renderRoute();
+    const profile = await checkProfile();
+    setAppVisibility(true, currentUserEmail);
+    if (profile) { await loadData(true); renderRoute(); }
+    else { showToast('Selamat datang! Silakan lengkapi data kos Anda.'); }
   } catch (err) { logoutUser(); }
 }
 

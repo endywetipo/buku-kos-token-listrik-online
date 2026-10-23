@@ -177,6 +177,11 @@ body.proof-modal-open { overflow: hidden; }
 .toast { z-index: 2100; border: 1px solid rgba(255,255,255,.18); background: #132b68; box-shadow: 0 14px 38px rgba(12,31,77,.28); }
 .copy-box { border-color: #cfe0f7; background: #f5f9ff; }
 #export-area .actions { gap: 8px; }
+.onboarding-tabs { display: flex; gap: 6px; margin-bottom: 16px; background: #eff6ff; padding: 4px; border-radius: 12px; }
+.onboarding-tab { flex: 1; padding: 10px; border: none; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; background: transparent; color: #475569; transition: all 0.2s; }
+.onboarding-tab.active { background: #fff; color: #1e40af; box-shadow: 0 2px 8px rgba(30,64,175,.1); }
+.onboarding-section { animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 @media (max-width: 720px) {
   body { padding: 12px; }
   .card, .auth-card { padding: 17px; border-radius: 16px; }

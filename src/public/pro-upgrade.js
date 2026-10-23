@@ -645,6 +645,7 @@
       if (file) newPath = await uploadProof('kos', file);
       const payload = { nama, kamar, bulan, jumlah, tanggal };
       if (newPath) payload.bukti_path = newPath;
+      if (userKosId) payload.kos_id = userKosId;
       if (isEditing) {
         await api('/kos_entries?id=eq.' + encodeURIComponent(editingEntry.id), { method: 'PATCH', headers: { Prefer: 'return=minimal' }, body: JSON.stringify(payload) });
         editingEntry = null;
@@ -680,6 +681,7 @@
       if (file) newPath = await uploadProof('token', file);
       const payload = { nama, kamar, jumlah, tanggal };
       if (newPath) payload.bukti_path = newPath;
+      if (userKosId) payload.kos_id = userKosId;
       if (isEditing) {
         await api('/token_entries?id=eq.' + encodeURIComponent(editingEntry.id), { method: 'PATCH', headers: { Prefer: 'return=minimal' }, body: JSON.stringify(payload) });
         editingEntry = null;
