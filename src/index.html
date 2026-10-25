@@ -261,11 +261,11 @@
 </div>
 
 <!-- REKENING -->
-<div class="rek-box">
-  <div class="bank">🏦 BANK BRI</div>
-  <div class="nomor" onclick="copyRek()" style="cursor:pointer;">7941 0101 9781 531</div>
-  <div class="nama">a.n. Kakak Keli</div>
-  <div class="info">💡 Klik nomor rekening untuk copy | Kos: Rp 300.000/bulan</div>
+<div class="rek-box hidden" id="kos-bank-card">
+  <div class="bank" id="kos-bank-name">🏦 Informasi rekening belum diatur</div>
+  <div class="nomor" id="kos-bank-number" onclick="copyRek()" style="cursor:pointer;"></div>
+  <div class="nama" id="kos-bank-holder"></div>
+  <div class="info" id="kos-bank-info">💡 Klik nomor rekening untuk menyalin.</div>
 </div>
 
 <!-- ROLE-BASED DASHBOARD CARDS -->
@@ -283,7 +283,7 @@
         </div>
         <div class="form-group">
           <label>Jumlah Pintu</label>
-          <input type="number" id="split-pintu" value="6" min="1" step="1" oninput="updateTokenSplitPreview()" required>
+          <input type="number" id="split-pintu" min="1" max="50" step="1" oninput="updateTokenSplitPreview()" required>
         </div>
       </div>
       <div id="split-preview" class="info-text" style="margin:0 0 10px;">Bagian per pintu: —</div>
@@ -316,15 +316,15 @@
         <div class="stat-label">Total Terkumpul</div>
       </div>
       <div class="stat-box purple">
-        <div class="stat-value" id="kos-target">Rp 2,1jt</div>
-        <div class="stat-label">Target (7x300rb)</div>
+        <div class="stat-value" id="kos-target">Rp 0</div>
+        <div class="stat-label" id="kos-target-label">Target Kos</div>
       </div>
       <div class="stat-box green">
         <div class="stat-value" id="kos-sudah">0</div>
         <div class="stat-label">Sudah Bayar</div>
       </div>
       <div class="stat-box red">
-        <div class="stat-value" id="kos-belum">7</div>
+        <div class="stat-value" id="kos-belum">0</div>
         <div class="stat-label">Belum Bayar</div>
       </div>
     </div>
@@ -361,13 +361,6 @@
           <label>Nomor Kamar</label>
           <select id="kos-kamar" required>
             <option value="">Pilih kamar...</option>
-            <option value="1">Pintu 1</option>
-            <option value="2">Pintu 2</option>
-            <option value="3">Pintu 3</option>
-            <option value="4">Pintu 4</option>
-            <option value="5">Pintu 5</option>
-            <option value="6">Pintu 6</option>
-            <option value="7">Pintu 7</option>
           </select>
         </div>
       </div>
@@ -397,7 +390,7 @@
       </div>
       <div class="form-group">
         <label>Jumlah Bayar (Rp)</label>
-        <input type="number" id="kos-jumlah" value="300000" min="1000" step="1000" required>
+        <input type="number" id="kos-jumlah" value="0" min="1" step="1000" required>
       </div>
       <div class="form-group upload-group">
         <label for="kos-bukti">Bukti Transfer <span class="upload-note">JPG/PNG · maksimal 2 MB · opsional</span></label>
@@ -420,12 +413,9 @@
 </div>
 
 <!-- ==================== TAB TOKEN ==================== -->
-<div class="card" style="border:2px solid #14b8a6;">
+<div class="card hidden" id="kos-token-card" style="border:2px solid #14b8a6;">
   <div class="card-title">⚡ Nomor Token Listrik Bersama</div>
-  <div style="font-size:26px;font-weight:800;letter-spacing:2px;text-align:center;padding:8px 0;"
-       onclick="copyTokenNumber()" title="Klik untuk menyalin">
-    56707933430
-  </div>
+  <div id="kos-token-number" style="font-size:26px;font-weight:800;letter-spacing:2px;text-align:center;padding:8px 0;cursor:pointer;" onclick="copyTokenNumber()" title="Klik untuk menyalin"></div>
   <div class="info-text" style="text-align:center;">Klik nomor token untuk menyalin.</div>
 </div>
 <div id="tab-token" class="tab-content hidden">
@@ -446,8 +436,8 @@
         <div class="stat-value" id="token-sudah">0</div>
         <div class="stat-label">Sudah Isi</div>
       </div>
-      <div class="stat-box red">
-        <div class="stat-value" id="token-belum">7</div>
+        <div class="stat-box red">
+          <div class="stat-value" id="token-belum">0</div>
         <div class="stat-label">Belum Isi</div>
       </div>
     </div>
@@ -475,13 +465,6 @@
           <label>Nomor Kamar</label>
           <select id="token-kamar" required>
             <option value="">Pilih kamar...</option>
-            <option value="1">Pintu 1</option>
-            <option value="2">Pintu 2</option>
-            <option value="3">Pintu 3</option>
-            <option value="4">Pintu 4</option>
-            <option value="5">Pintu 5</option>
-            <option value="6">Pintu 6</option>
-            <option value="7">Pintu 7</option>
           </select>
         </div>
       </div>
@@ -533,7 +516,7 @@
 <div style="text-align:center; padding: 20px; color: #94a3b8; font-size: 11px;">
   ☁️ Data tersimpan di database online dan dibagikan ke semua pengguna.<br>
   Perubahan akan tersinkron otomatis ke perangkat lain.<br>
-  Rekening BRI: 794101019781531 a.n. Kakak Keli
+  Informasi pembayaran mengikuti kos yang sedang dipilih.
 </div>
 
 <script>
@@ -541,9 +524,8 @@
 const SUPABASE_URL = 'https://nnclbwtvcohiiptbakkz.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_HFYgoas0_PDzSDSMC3-ImQ_-_7A6zXW';
 const TARIF_PER_KWH = 1444;
-const KOS_PER_BULAN = 300000;
-const JUMLAH_KAMAR = 7;
-const NOMOR_TOKEN_LISTRIK = '56707933430';
+const DEFAULT_JUMLAH_PINTU = 7;
+const DEFAULT_HARGA_KOS = 300000;
 const API_BASE = SUPABASE_URL + '/rest/v1';
 const AUTH_BASE = SUPABASE_URL + '/auth/v1';
 
@@ -556,6 +538,20 @@ let isAdmin = false;
 let userProfile = null;
 let userKosId = null;
 let userRole = null;
+let activeKos = null;
+
+function getDoorCount() {
+  const count = Number(activeKos?.jumlah_pintu ?? DEFAULT_JUMLAH_PINTU);
+  return Number.isInteger(count) && count >= 1 && count <= 50 ? count : DEFAULT_JUMLAH_PINTU;
+}
+function getMonthlyRent() {
+  const rent = Number(activeKos?.harga_kos ?? DEFAULT_HARGA_KOS);
+  return Number.isInteger(rent) && rent >= 0 ? rent : 0;
+}
+function getKosTokenNumber() { return String(activeKos?.nomor_token || '').trim(); }
+function getKosBankName() { return String(activeKos?.rekening_bank || '').trim(); }
+function getKosBankNumber() { return String(activeKos?.rekening_no || '').trim(); }
+function getKosBankHolder() { return String(activeKos?.rekening_nama || '').trim(); }
 
 function getSupabaseHeaders() {
   return {
@@ -676,19 +672,133 @@ async function checkProfile() {
       userProfile = rows[0];
       userKosId = userProfile.kos_id || null;
       userRole = userProfile.role || null;
-      if (userKosId) {
-        const kosRows = await api('/kos?select=*&id=eq.' + encodeURIComponent(userKosId));
-        if (Array.isArray(kosRows) && kosRows.length > 0) {
-          const bar = document.getElementById('kos-info-bar');
-          document.getElementById('kos-info-name').textContent = '🏠 ' + (kosRows[0].nama_kos || '') + (kosRows[0].kota ? ' — ' + kosRows[0].kota : '');
-          document.getElementById('kos-info-code').textContent = 'Kode: ' + (kosRows[0].kode_undangan || '');
-          bar.classList.remove('hidden');
-        }
-      }
+      await refreshActiveKos();
       return userProfile;
     }
   } catch (err) { console.warn('checkProfile error:', err.message); }
   return null;
+}
+
+function renderDoorOptions(selectId) {
+  const select = document.getElementById(selectId);
+  if (!select) return;
+  const selected = select.value;
+  const count = getDoorCount();
+  select.innerHTML = '<option value="">Pilih kamar...</option>' + Array.from({ length: count }, (_, index) => {
+    const number = index + 1;
+    return '<option value="' + number + '">Pintu ' + number + '</option>';
+  }).join('');
+  if (Number(selected) >= 1 && Number(selected) <= count) select.value = selected;
+}
+
+function applyKosSettingsToUI() {
+  const kosInfoBar = document.getElementById('kos-info-bar');
+  if (activeKos && kosInfoBar) {
+    document.getElementById('kos-info-name').textContent = '🏠 ' + (activeKos.nama_kos || '') + (activeKos.kota ? ' — ' + activeKos.kota : '');
+    document.getElementById('kos-info-code').textContent = 'Kode: ' + (activeKos.kode_undangan || '');
+    kosInfoBar.classList.remove('hidden');
+  }
+  renderDoorOptions('kos-kamar');
+  renderDoorOptions('token-kamar');
+  const doorCount = getDoorCount();
+  const rent = getMonthlyRent();
+  const bankCard = document.getElementById('kos-bank-card');
+  const bankName = document.getElementById('kos-bank-name');
+  const bankNumber = document.getElementById('kos-bank-number');
+  const bankHolder = document.getElementById('kos-bank-holder');
+  const bankInfo = document.getElementById('kos-bank-info');
+  const tokenCard = document.getElementById('kos-token-card');
+  const tokenNumber = document.getElementById('kos-token-number');
+  if (bankCard) bankCard.classList.toggle('hidden', !activeKos);
+  if (bankName) bankName.textContent = activeKos ? '🏦 ' + (getKosBankName() || 'Bank belum diatur') : '';
+  if (bankNumber) bankNumber.textContent = getKosBankNumber();
+  if (bankHolder) bankHolder.textContent = getKosBankHolder() ? 'a.n. ' + getKosBankHolder() : '';
+  if (bankInfo) bankInfo.textContent = activeKos
+    ? (getKosBankNumber() ? '💡 Klik nomor rekening untuk copy | Kos: ' : 'Rekening belum diatur | Kos: ') + formatRupiah(rent) + '/bulan'
+    : '';
+  if (tokenCard) tokenCard.classList.toggle('hidden', !activeKos);
+  if (tokenNumber) {
+    tokenNumber.textContent = getKosTokenNumber() || 'Nomor token belum diatur';
+    tokenNumber.style.color = getKosTokenNumber() ? '' : '#64748b';
+  }
+  const rentInput = document.getElementById('kos-jumlah');
+  if (rentInput && editingEntry?.type !== 'kos') rentInput.value = rent;
+  const splitDoors = document.getElementById('split-pintu');
+  if (splitDoors) { splitDoors.value = doorCount; splitDoors.max = doorCount; updateTokenSplitPreview(); }
+  const settings = {
+    'settings-jumlah-pintu': doorCount,
+    'settings-rekening-bank': getKosBankName(),
+    'settings-rekening-no': getKosBankNumber(),
+    'settings-rekening-nama': getKosBankHolder(),
+    'settings-nomor-token': getKosTokenNumber(),
+    'settings-harga-kos': rent
+  };
+  Object.entries(settings).forEach(([id, value]) => {
+    const input = document.getElementById(id);
+    if (input && document.activeElement !== input) input.value = value;
+  });
+}
+
+async function saveKosSettings(e) {
+  e.preventDefault();
+  if (userRole !== 'owner' || !userKosId) {
+    showToast('Pengaturan hanya dapat disimpan oleh pemilik kos.');
+    return false;
+  }
+  const jumlahPintu = Number(document.getElementById('settings-jumlah-pintu').value);
+  const hargaKos = Number(document.getElementById('settings-harga-kos').value);
+  const nomorToken = document.getElementById('settings-nomor-token').value.trim();
+  const message = document.getElementById('kos-settings-message');
+  if (!Number.isInteger(jumlahPintu) || jumlahPintu < 1 || jumlahPintu > 50) {
+    if (message) message.textContent = 'Jumlah pintu harus angka bulat dari 1 sampai 50.';
+    return false;
+  }
+  if (!Number.isInteger(hargaKos) || hargaKos < 0) {
+    if (message) message.textContent = 'Harga kos harus berupa bilangan bulat rupiah.';
+    return false;
+  }
+  if (!/^\d{20}$/.test(nomorToken)) {
+    if (message) message.textContent = 'Nomor meter PLN harus tepat 20 digit angka.';
+    return false;
+  }
+  const settings = {
+    jumlah_pintu: jumlahPintu,
+    rekening_bank: document.getElementById('settings-rekening-bank').value.trim() || null,
+    rekening_no: document.getElementById('settings-rekening-no').value.trim() || null,
+    rekening_nama: document.getElementById('settings-rekening-nama').value.trim() || null,
+    nomor_token: nomorToken,
+    harga_kos: hargaKos
+  };
+  try {
+    await api('/kos?id=eq.' + encodeURIComponent(userKosId), {
+      method: 'PATCH',
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify(settings)
+    });
+    await refreshActiveKos();
+    renderAll();
+    if (message) message.textContent = 'Pengaturan berhasil disimpan dan dashboard sudah diperbarui.';
+    showToast('✅ Pengaturan kos berhasil disimpan.');
+  } catch (err) {
+    console.error('Gagal menyimpan pengaturan kos:', err);
+    if (message) message.textContent = 'Gagal menyimpan. Pastikan migrasi izin update pengaturan kos sudah dijalankan di Supabase.';
+    showToast('❌ Gagal menyimpan pengaturan kos.');
+  }
+  return false;
+}
+
+async function refreshActiveKos() {
+  if (!userKosId) { activeKos = null; applyKosSettingsToUI(); return null; }
+  const rows = await api('/kos?select=*&id=eq.' + encodeURIComponent(userKosId));
+  activeKos = Array.isArray(rows) && rows.length ? rows[0] : null;
+  if (activeKos) {
+    const bar = document.getElementById('kos-info-bar');
+    document.getElementById('kos-info-name').textContent = '🏠 ' + (activeKos.nama_kos || '') + (activeKos.kota ? ' — ' + activeKos.kota : '');
+    document.getElementById('kos-info-code').textContent = 'Kode: ' + (activeKos.kode_undangan || '');
+    bar.classList.remove('hidden');
+  }
+  applyKosSettingsToUI();
+  return activeKos;
 }
 
 function generateInviteCode() {
@@ -713,9 +823,7 @@ async function createKos(e) {
     if (!newKosId) throw new Error('Gagal membuat kos');
     userProfile = { id: currentUserUuid, kos_id: newKosId, role: 'owner' };
     userKosId = newKosId; userRole = 'owner';
-    document.getElementById('kos-info-name').textContent = '🏠 ' + nama + ' — ' + kota;
-    document.getElementById('kos-info-code').textContent = 'Kode: ' + kode;
-    document.getElementById('kos-info-bar').classList.remove('hidden');
+    await refreshActiveKos();
     setOnboardingMessage('');
     setAppVisibility(true, currentUserEmail);
     rebuildNav();
@@ -737,14 +845,13 @@ async function joinKos(e) {
       body: JSON.stringify({ input_code: kode })
     });
     if (!kosId) throw new Error('Kode tidak ditemukan');
-    const kosRows = await api('/kos?select=id,nama_kos,kota,kode_undangan&id=eq.' + encodeURIComponent(kosId));
+    const kosRows = await api('/kos?select=*&id=eq.' + encodeURIComponent(kosId));
     if (!Array.isArray(kosRows) || kosRows.length === 0) throw new Error('Kos berhasil ditemukan tetapi tidak dapat dimuat');
     const kos = kosRows[0];
     userProfile = { id: currentUserUuid, kos_id: kos.id, role: 'tenant' };
     userKosId = kos.id; userRole = 'tenant';
-    document.getElementById('kos-info-name').textContent = '🏠 ' + (kos.nama_kos || '') + (kos.kota ? ' — ' + kos.kota : '');
-    document.getElementById('kos-info-code').textContent = 'Kode: ' + (kos.kode_undangan || '');
-    document.getElementById('kos-info-bar').classList.remove('hidden');
+    activeKos = kos;
+    applyKosSettingsToUI();
     setOnboardingMessage('');
     setAppVisibility(true, currentUserEmail);
     rebuildNav();
@@ -782,6 +889,7 @@ async function loginUser(e) {
     setAuthMessage('');
     if (profile) {
       setAppVisibility(true, currentUserEmail);
+      rebuildNav();
       navigate('/dashboard');
       await loadData(true);
     } else {
@@ -973,7 +1081,7 @@ async function signupUser(e) {
 }
 
 function logoutUser() {
-  sessionToken = ''; isAdmin = false; currentUserEmail = ''; currentUserUuid = ''; userProfile = null; userKosId = null; userRole = null;
+  sessionToken = ''; isAdmin = false; currentUserEmail = ''; currentUserUuid = ''; userProfile = null; userKosId = null; userRole = null; activeKos = null;
   localStorage.removeItem('bukukos_session');
   navigate('/login');
   setAppVisibility(false);
@@ -994,7 +1102,7 @@ async function checkSession() {
     await checkAdmin(currentUserEmail);
     const profile = await checkProfile();
     setAppVisibility(true, currentUserEmail);
-    if (profile) { await loadData(true); renderRoute(); }
+    if (profile) { rebuildNav(); await loadData(true); renderRoute(); }
     else { showToast('Selamat datang! Silakan lengkapi data kos Anda.'); }
   } catch (err) { logoutUser(); }
 }
@@ -1027,12 +1135,26 @@ async function loadData(showMessage = false) {
     const periode = getCurrentPeriode();
     const filters = getDataFilters();
     const queries = [api(filters.kos), api(filters.token)];
-    if (filters.profiles) queries.push(api(filters.profiles));
+    let profilesIndex = null;
+    let kosIndex = null;
+    if (filters.profiles) { profilesIndex = queries.length; queries.push(api(filters.profiles)); }
+    if (userKosId) {
+      kosIndex = queries.length;
+      queries.push(api('/kos?select=*&id=eq.' + encodeURIComponent(userKosId)));
+    }
     const results = await Promise.all(queries);
+    if (kosIndex !== null) {
+      activeKos = Array.isArray(results[kosIndex]) && results[kosIndex].length ? results[kosIndex][0] : null;
+      if (activeKos) {
+        document.getElementById('kos-info-name').textContent = '🏠 ' + (activeKos.nama_kos || '') + (activeKos.kota ? ' — ' + activeKos.kota : '');
+        document.getElementById('kos-info-code').textContent = 'Kode: ' + (activeKos.kode_undangan || '');
+      }
+      applyKosSettingsToUI();
+    }
     data = {
       kos_entries: Array.isArray(results[0]) ? results[0] : [],
       token_entries: Array.isArray(results[1]) ? results[1] : [],
-      tenant_profiles: results[2] && Array.isArray(results[2]) ? results[2] : [],
+      tenant_profiles: profilesIndex !== null && Array.isArray(results[profilesIndex]) ? results[profilesIndex] : [],
       tagihan_token: [],
       unpaid_token_count: null,
       periode
@@ -1076,7 +1198,7 @@ function formatTanggal(tgl) {
 
 function getKamarSummaryKos() {
   const summary = {};
-  for (let i = 1; i <= JUMLAH_KAMAR; i++) summary[i] = { total: 0, entries: [] };
+  for (let i = 1; i <= getDoorCount(); i++) summary[i] = { total: 0, entries: [] };
   data.kos_entries.forEach(e => {
     if (summary[e.kamar]) {
       summary[e.kamar].total += Number(e.jumlah || 0);
@@ -1088,7 +1210,7 @@ function getKamarSummaryKos() {
 
 function getKamarSummaryToken() {
   const summary = {};
-  for (let i = 1; i <= JUMLAH_KAMAR; i++) summary[i] = { total: 0, entries: [] };
+  for (let i = 1; i <= getDoorCount(); i++) summary[i] = { total: 0, entries: [] };
   data.token_entries.forEach(e => {
     if (summary[e.kamar]) {
       summary[e.kamar].total += Number(e.jumlah || 0);
@@ -1103,11 +1225,14 @@ function renderKosStats() {
   const total = data.kos_entries.reduce((sum, e) => sum + Number(e.jumlah || 0), 0);
   const summary = getKamarSummaryKos();
   const sudahBayar = Object.values(summary).filter(s => s.total > 0).length;
-  const belumBayar = JUMLAH_KAMAR - sudahBayar;
-  const target = JUMLAH_KAMAR * KOS_PER_BULAN;
+  const doorCount = getDoorCount();
+  const belumBayar = doorCount - sudahBayar;
+  const target = doorCount * getMonthlyRent();
   const progress = target > 0 ? Math.min(100, Math.round((total / target) * 100)) : 0;
 
   document.getElementById('kos-total').textContent = formatRupiah(total);
+  document.getElementById('kos-target').textContent = formatRupiah(target);
+  document.getElementById('kos-target-label').textContent = 'Target (' + doorCount + ' × ' + formatRupiah(getMonthlyRent()) + ')';
   document.getElementById('kos-sudah').textContent = sudahBayar;
   document.getElementById('kos-belum').textContent = belumBayar;
   document.getElementById('kos-progress-text').textContent = progress + '%';
@@ -1120,13 +1245,13 @@ function renderKosKamar() {
   const summary = getKamarSummaryKos();
   const grid = document.getElementById('kos-kamar-grid');
   grid.innerHTML = '';
-  for (let i = 1; i <= JUMLAH_KAMAR; i++) {
+  for (let i = 1; i <= getDoorCount(); i++) {
     const s = summary[i];
     const isPaid = s.total > 0;
     const div = document.createElement('div');
     div.className = 'kamar-item ' + (isPaid ? 'paid' : 'unpaid');
     div.onclick = () => selectKamarKos(i);
-    div.innerHTML = `<div class="kamar-num">${i}</div><div class="kamar-status">${isPaid ? '✅ Lunas' : '❌ Belum'}</div>${isPaid ? `<div class="kamar-amount">${formatRupiah(s.total)}</div>` : '<div class="kamar-amount">300rb</div>'}`;
+    div.innerHTML = `<div class="kamar-num">${i}</div><div class="kamar-status">${isPaid ? '✅ Lunas' : '❌ Belum'}</div>${isPaid ? `<div class="kamar-amount">${formatRupiah(s.total)}</div>` : `<div class="kamar-amount">${formatRupiah(getMonthlyRent())}</div>`}`;
     grid.appendChild(div);
   }
 }
@@ -1182,7 +1307,7 @@ async function submitKos(e) {
       showToast(`✅ ${formatRupiah(jumlah)} dari ${nama} (Pintu ${kamar}) tersimpan online!`);
     }
     document.getElementById('form-kos').reset();
-    document.getElementById('kos-jumlah').value = KOS_PER_BULAN;
+    document.getElementById('kos-jumlah').value = getMonthlyRent();
     document.getElementById('kos-tanggal').value = new Date().toISOString().split('T')[0];
     setKosSubmitMode(false);
     await loadData();
@@ -1203,7 +1328,7 @@ function renderTokenStats() {
   const total = data.token_entries.reduce((sum, e) => sum + Number(e.jumlah || 0), 0);
   const summary = getKamarSummaryToken();
   const sudahIsi = Object.values(summary).filter(s => s.total > 0).length;
-  const belumIsi = JUMLAH_KAMAR - sudahIsi;
+  const belumIsi = getDoorCount() - sudahIsi;
   const kwh = Math.round(total / TARIF_PER_KWH * 10) / 10;
 
   document.getElementById('token-total').textContent = formatRupiah(total);
@@ -1216,7 +1341,7 @@ function renderTokenKamar() {
   const summary = getKamarSummaryToken();
   const grid = document.getElementById('token-kamar-grid');
   grid.innerHTML = '';
-  for (let i = 1; i <= JUMLAH_KAMAR; i++) {
+  for (let i = 1; i <= getDoorCount(); i++) {
     const s = summary[i];
     const isPaid = s.total > 0;
     const div = document.createElement('div');
@@ -1273,7 +1398,7 @@ async function submitToken(e) {
       editingEntry = null;
       showToast('✅ Data token diperbarui.');
     } else {
-      await api('/token_entries', { method: 'POST', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify({ ...payload, nomor_token: NOMOR_TOKEN_LISTRIK, periode: getCurrentPeriode() }) });
+      await api('/token_entries', { method: 'POST', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify({ ...payload, nomor_token: getKosTokenNumber(), periode: getCurrentPeriode() }) });
       showToast(`✅ Token ${formatRupiah(jumlah)} dari ${nama} (Pintu ${kamar}) tersimpan online!`);
     }
     document.getElementById('form-token').reset();
@@ -1293,9 +1418,11 @@ function hapusToken(id) { openDeletePage('token', id); }
 function editToken(id) { openEditor('token', id); }
 
 function copyTokenNumber() {
-  navigator.clipboard.writeText(NOMOR_TOKEN_LISTRIK).then(() => {
-    showToast('✅ Nomor token 56707933430 berhasil disalin!');
-  }).catch(() => showToast('Nomor token: ' + NOMOR_TOKEN_LISTRIK));
+  const token = getKosTokenNumber();
+  if (!token) { showToast('Nomor token belum diatur oleh pemilik kos.'); return; }
+  navigator.clipboard.writeText(token).then(() => {
+    showToast('✅ Nomor token berhasil disalin!');
+  }).catch(() => showToast('Nomor token: ' + token));
 }
 
 // ==================== HALAMAN DAN NAVIGASI ====================
@@ -1303,6 +1430,7 @@ let editingEntry = null;
 let deleteTarget = null;
 const routeItems = [
   { path: '/dashboard', label: '📊 Dashboard' },
+  { path: '/pengaturan-kos', label: '⚙️ Pengaturan Kos' },
   { path: '/kos', label: '🏠 Data Kos' },
   { path: '/kos/tambah', label: '＋ Input Kos' },
   { path: '/token', label: '⚡ Data Token' },
@@ -1357,6 +1485,24 @@ function buildPageLayout() {
   const tokenList = makePage('/token', 'Token Listrik', 'Lihat riwayat dan status pengisian token listrik.');
   const tokenAdd = makePage('/token/tambah', 'Input Token Listrik', 'Catat kontribusi pengisian token dari penghuni.');
   const exportPage = makePage('/export', 'Export & Share', 'Salin laporan untuk dibagikan ke grup atau unduh salinan JSON.');
+  const settingsPage = makePage('/pengaturan-kos', 'Pengaturan Kos', 'Atur jumlah pintu, informasi pembayaran, dan harga kos Anda.');
+  settingsPage.insertAdjacentHTML('beforeend', `
+    <div class="card">
+      <form id="kos-settings-form" onsubmit="return saveKosSettings(event)">
+        <div class="form-row">
+          <div class="form-group"><label for="settings-jumlah-pintu">Jumlah Pintu (1–50)</label><input type="number" id="settings-jumlah-pintu" min="1" max="50" step="1" required></div>
+          <div class="form-group"><label for="settings-harga-kos">Harga Kos per Pintu / Bulan (Rp)</label><input type="number" id="settings-harga-kos" min="0" step="1000" required></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label for="settings-rekening-bank">Nama Bank</label><input type="text" id="settings-rekening-bank" maxlength="80" placeholder="Contoh: BRI"></div>
+          <div class="form-group"><label for="settings-rekening-no">Nomor Rekening</label><input type="text" id="settings-rekening-no" maxlength="40" inputmode="numeric" placeholder="Nomor rekening kos"></div>
+        </div>
+        <div class="form-group"><label for="settings-rekening-nama">Nama Pemilik Rekening</label><input type="text" id="settings-rekening-nama" maxlength="120" placeholder="Nama pada rekening"></div>
+        <div class="form-group"><label for="settings-nomor-token">Nomor Meter Token PLN (20 digit)</label><input type="text" id="settings-nomor-token" inputmode="numeric" minlength="20" maxlength="20" pattern="[0-9]{20}" placeholder="Masukkan 20 digit nomor meter" required></div>
+        <div id="kos-settings-message" class="info-text" role="status" aria-live="polite" style="margin-bottom:10px;"></div>
+        <button type="submit" class="btn btn-primary" style="width:100%;">Simpan Pengaturan Kos</button>
+      </form>
+    </div>`);
   const deletePage = makePage('/delete', 'Konfirmasi Penghapusan', 'Tinjau data terlebih dahulu sebelum menghapus.');
   pages['/delete'] = deletePage;
 
@@ -1436,6 +1582,10 @@ function renderRoute(forcedRoute) {
     route = '/dashboard';
     if (!forcedRoute && location.hash !== '#/dashboard') history.replaceState(null, '', '#/dashboard');
   }
+  if (route === '/pengaturan-kos' && userRole !== 'owner') {
+    route = '/dashboard';
+    showToast('Pengaturan kos hanya tersedia untuk pemilik kos.');
+  }
   let title = '';
   if (route.startsWith('/kos/edit/')) {
     const id = route.split('/').pop();
@@ -1485,7 +1635,7 @@ function prepareKosEditor(item) {
   document.getElementById('kos-nama').value = item.nama || '';
   document.getElementById('kos-kamar').value = item.kamar || '';
   document.getElementById('kos-bulan').value = item.bulan || '';
-  document.getElementById('kos-jumlah').value = item.jumlah || KOS_PER_BULAN;
+  document.getElementById('kos-jumlah').value = item.jumlah || getMonthlyRent();
   document.getElementById('kos-tanggal').value = String(item.tanggal || '').slice(0, 10);
   setKosSubmitMode(true);
 }
@@ -1501,7 +1651,7 @@ function startCreate(type) {
   editingEntry = null;
   if (type === 'kos') {
     document.getElementById('form-kos').reset();
-    document.getElementById('kos-jumlah').value = KOS_PER_BULAN;
+    document.getElementById('kos-jumlah').value = getMonthlyRent();
     document.getElementById('kos-tanggal').value = new Date().toISOString().split('T')[0];
     setKosSubmitMode(false);
   } else {
@@ -1558,44 +1708,49 @@ function switchTab(tab) {
 // ==================== EXPORT ====================
 function exportWhatsAppFull() {
   let text = `*📋 LAPORAN KOS & TOKEN LISTRIK*\nPeriode: ${data.periode}\n────────────────────────\n\n`;
+  const doorCount = getDoorCount();
+  const rent = getMonthlyRent();
   const kosTotal = data.kos_entries.reduce((s, e) => s + Number(e.jumlah || 0), 0);
   const kosSummary = getKamarSummaryKos();
   const kosSudah = Object.values(kosSummary).filter(s => s.total > 0).length;
-  text += `*🏠 PEMBAYARAN KOS*\nTarget: ${formatRupiah(JUMLAH_KAMAR * KOS_PER_BULAN)} (7 x 300rb)\nTerkumpul: ${formatRupiah(kosTotal)}\nSudah bayar: ${kosSudah}/7 orang\n\n*Status per Pintu:*\n`;
-  for (let i = 1; i <= JUMLAH_KAMAR; i++) {
-    const s = kosSummary[i]; text += `Pintu ${i}: ${s.total > 0 ? '✅ Lunas ' + formatRupiah(s.total) : '❌ Belum 300rb'}\n`;
+  text += `*🏠 PEMBAYARAN KOS*\nTarget: ${formatRupiah(doorCount * rent)} (${doorCount} x ${formatRupiah(rent)})\nTerkumpul: ${formatRupiah(kosTotal)}\nSudah bayar: ${kosSudah}/${doorCount} pintu\n\n*Status per Pintu:*\n`;
+  for (let i = 1; i <= doorCount; i++) {
+    const s = kosSummary[i]; text += `Pintu ${i}: ${s.total > 0 ? '✅ Lunas ' + formatRupiah(s.total) : '❌ Belum ' + formatRupiah(rent)}\n`;
   }
-  text += `\n*⚡ TOKEN LISTRIK*\nNomor token: ${NOMOR_TOKEN_LISTRIK}\n`;
+  text += `\n*⚡ TOKEN LISTRIK*\nNomor token: ${getKosTokenNumber() || 'Belum diatur'}\n`;
   const tokenTotal = data.token_entries.reduce((s, e) => s + Number(e.jumlah || 0), 0);
   const tokenSummary = getKamarSummaryToken();
   const tokenKwh = Math.round(tokenTotal / TARIF_PER_KWH * 10) / 10;
   const tokenSudah = Object.values(tokenSummary).filter(s => s.total > 0).length;
-  text += `Total: ${formatRupiah(tokenTotal)}\nEstimasi: ${tokenKwh} kWh\nSudah isi: ${tokenSudah}/7 orang\n\n*Status per Pintu:*\n`;
-  for (let i = 1; i <= JUMLAH_KAMAR; i++) {
+  text += `Total: ${formatRupiah(tokenTotal)}\nEstimasi: ${tokenKwh} kWh\nSudah isi: ${tokenSudah}/${doorCount} pintu\n\n*Status per Pintu:*\n`;
+  for (let i = 1; i <= doorCount; i++) {
     const s = tokenSummary[i]; text += `Pintu ${i}: ${s.total > 0 ? '✅ ' + formatRupiah(s.total) : '❌ Belum'}\n`;
   }
-  text += `\n*🏦 Rekening Pembayaran:*\nBRI: 794101019781531\na.n. Kakak Keli\n\n_Yuk yang belum bayar/isi token, segera ya!_`;
+  text += `\n*🏦 Rekening Pembayaran:*\n${getKosBankName() || 'Bank belum diatur'}: ${getKosBankNumber() || 'Nomor belum diatur'}\na.n. ${getKosBankHolder() || 'Nama belum diatur'}\n\n_Yuk yang belum bayar/isi token, segera ya!_`;
   document.getElementById('export-text').textContent = text;
   document.getElementById('export-area').classList.remove('hidden');
 }
 
 function exportWhatsAppKos() {
+  const doorCount = getDoorCount();
+  const rent = getMonthlyRent();
   const kosTotal = data.kos_entries.reduce((s, e) => s + Number(e.jumlah || 0), 0);
   const kosSummary = getKamarSummaryKos();
   const kosSudah = Object.values(kosSummary).filter(s => s.total > 0).length;
-  let text = `*🏠 REKAP PEMBAYARAN KOS*\nBulan: ${data.periode}\n────────────────────\nTarget: ${formatRupiah(JUMLAH_KAMAR * KOS_PER_BULAN)}\nTerkumpul: ${formatRupiah(kosTotal)}\nSudah: ${kosSudah}/7 orang\n\n*Status per Pintu:*\n`;
-  for (let i = 1; i <= JUMLAH_KAMAR; i++) { const s = kosSummary[i]; text += `Pintu ${i}: ${s.total > 0 ? '✅ Lunas ' + formatRupiah(s.total) : '❌ Belum bayar 300rb'}\n`; }
-  text += `\n*🏦 Transfer ke:*\nBRI 794101019781531\na.n. Kakak Keli\n\n_Yuk bayar kosnya!_`;
+  let text = `*🏠 REKAP PEMBAYARAN KOS*\nBulan: ${data.periode}\n────────────────────\nTarget: ${formatRupiah(doorCount * rent)} (${doorCount} x ${formatRupiah(rent)})\nTerkumpul: ${formatRupiah(kosTotal)}\nSudah: ${kosSudah}/${doorCount} pintu\n\n*Status per Pintu:*\n`;
+  for (let i = 1; i <= doorCount; i++) { const s = kosSummary[i]; text += `Pintu ${i}: ${s.total > 0 ? '✅ Lunas ' + formatRupiah(s.total) : '❌ Belum bayar ' + formatRupiah(rent)}\n`; }
+  text += `\n*🏦 Transfer ke:*\n${getKosBankName() || 'Bank belum diatur'} ${getKosBankNumber() || 'Nomor belum diatur'}\na.n. ${getKosBankHolder() || 'Nama belum diatur'}\n\n_Yuk bayar kosnya!_`;
   document.getElementById('export-text').textContent = text; document.getElementById('export-area').classList.remove('hidden');
 }
 
 function exportWhatsAppToken() {
+  const doorCount = getDoorCount();
   const tokenTotal = data.token_entries.reduce((s, e) => s + Number(e.jumlah || 0), 0);
   const tokenSummary = getKamarSummaryToken();
   const tokenKwh = Math.round(tokenTotal / TARIF_PER_KWH * 10) / 10;
   const tokenSudah = Object.values(tokenSummary).filter(s => s.total > 0).length;
-  let text = `*⚡ REKAP TOKEN LISTRIK*\nPeriode: ${data.periode}\nNomor token: ${NOMOR_TOKEN_LISTRIK}\n────────────────────\nTotal: ${formatRupiah(tokenTotal)}\nEstimasi: ${tokenKwh} kWh\nSudah isi: ${tokenSudah}/7 orang\n\n*Status per Pintu:*\n`;
-  for (let i = 1; i <= JUMLAH_KAMAR; i++) { const s = tokenSummary[i]; text += `Pintu ${i}: ${s.total > 0 ? '✅ ' + formatRupiah(s.total) : '❌ Belum isi'}\n`; }
+  let text = `*⚡ REKAP TOKEN LISTRIK*\nPeriode: ${data.periode}\nNomor token: ${getKosTokenNumber() || 'Belum diatur'}\n────────────────────\nTotal: ${formatRupiah(tokenTotal)}\nEstimasi: ${tokenKwh} kWh\nSudah isi: ${tokenSudah}/${doorCount} pintu\n\n*Status per Pintu:*\n`;
+  for (let i = 1; i <= doorCount; i++) { const s = tokenSummary[i]; text += `Pintu ${i}: ${s.total > 0 ? '✅ ' + formatRupiah(s.total) : '❌ Belum isi'}\n`; }
   text += `\n_Yuk isi tokennya biar listriknya gak mati!_`;
   document.getElementById('export-text').textContent = text; document.getElementById('export-area').classList.remove('hidden');
 }
@@ -1619,7 +1774,7 @@ async function importJSON(e) {
         await api('/kos_entries', { method:'POST', headers:{'Prefer':'return=minimal'}, body:JSON.stringify({nama:x.nama || 'Tidak diketahui', kamar:x.kamar, bulan:x.bulan || getCurrentBulan(), jumlah:Number(x.jumlah||0), tanggal:x.tanggal, periode:getCurrentPeriode(), user_id:currentUserUuid || null, kos_id:userKosId}) });
       }
       for (const x of imported.token_entries) {
-        await api('/token_entries', { method:'POST', headers:{'Prefer':'return=minimal'}, body:JSON.stringify({nama:x.nama || 'Tidak diketahui', kamar:x.kamar, jumlah:Number(x.jumlah||0), nomor_token:NOMOR_TOKEN_LISTRIK, tanggal:x.tanggal, periode:getCurrentPeriode(), user_id:currentUserUuid || null, kos_id:userKosId}) });
+        await api('/token_entries', { method:'POST', headers:{'Prefer':'return=minimal'}, body:JSON.stringify({nama:x.nama || 'Tidak diketahui', kamar:x.kamar, jumlah:Number(x.jumlah||0), nomor_token:getKosTokenNumber(), tanggal:x.tanggal, periode:getCurrentPeriode(), user_id:currentUserUuid || null, kos_id:userKosId}) });
       }
       await loadData(); showToast('📁 Data berhasil di-import ke database online!');
     } catch(err) { console.error(err); showToast('❌ Gagal import data.'); }
@@ -1633,7 +1788,8 @@ function copyToClipboard() {
 }
 
 function copyRek() {
-  const rek = '794101019781531';
+  const rek = getKosBankNumber();
+  if (!rek) { showToast('Nomor rekening kos belum diatur.'); return; }
   navigator.clipboard.writeText(rek).then(() => showToast('📋 Nomor rekening dicopy!')).catch(() => showToast('Nomor rekening: ' + rek));
 }
 
@@ -1744,7 +1900,8 @@ function renderTenantDashboard() {
     html += '</tbody></table>';
   }
   if (!kosPaid) {
-    html += '<div class="info-text" style="background:#fef2f2;color:#dc2626;padding:10px;border-radius:8px;margin-top:10px;">⚠️ Kos bulan ini belum dibayar. Bayar Rp 300.000 ke rekening BRI 794101019781531 a.n. Kakak Keli.</div>';
+    const bankDetails = [getKosBankName(), getKosBankNumber(), getKosBankHolder()].filter(Boolean).join(' ');
+    html += '<div class="info-text" style="background:#fef2f2;color:#dc2626;padding:10px;border-radius:8px;margin-top:10px;">⚠️ Kos bulan ini belum dibayar. Bayar ' + formatRupiah(getMonthlyRent()) + (bankDetails ? ' ke ' + escapeHtml(bankDetails) : '') + '.</div>';
   }
   if (myKos.length > 0 || myToken.length > 0) {
     html += '<div style="margin-top:12px;"><strong>Riwayat Pembayaran Saya:</strong></div><table><thead><tr><th>Tanggal</th><th>Jenis</th><th>Jumlah</th><th>Status</th></tr></thead><tbody>';
@@ -1810,6 +1967,10 @@ async function submitAutoSplitToken(e) {
     return false;
   }
   if (userRole !== 'owner' || !userKosId) { showToast('❌ Hanya pemilik kos yang dapat membagi token.'); return false; }
+  if (jumlahPintu !== getDoorCount()) {
+    showToast('❌ Jumlah pintu harus sesuai pengaturan kos (' + getDoorCount() + ').');
+    return false;
+  }
 
   const profiles = data.tenant_profiles || [];
   const tenants = profiles.filter(p => p.role === 'tenant' && String(p.kos_id) === String(userKosId));
