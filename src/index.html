@@ -706,17 +706,13 @@ async function createKos(e) {
   if (!nama || !kota) { setOnboardingMessage('Nama kos dan kota wajib diisi.'); return false; }
   try {
     const kode = generateInviteCode();
-    const kosRows = await api('/kos', { method: 'POST', headers: { 'Prefer': 'return=representation' }, body: JSON.stringify({ owner_id: currentUserUuid, nama_kos: nama, kota: kota, kode_undangan: kode }) });
-    const newKos = Array.isArray(kosRows) ? kosRows[0] : kosRows;
-    if (!newKos || !newKos.id) throw new Error('Gagal membuat kos');
-    const existingProfile = await api('/profiles?select=*&id=eq.' + encodeURIComponent(currentUserUuid));
-    if (Array.isArray(existingProfile) && existingProfile.length > 0) {
-      await api('/profiles?id=eq.' + encodeURIComponent(currentUserUuid), { method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify({ kos_id: newKos.id, role: 'owner' }) });
-    } else {
-      await api('/profiles', { method: 'POST', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify({ id: currentUserUuid, kos_id: newKos.id, role: 'owner' }) });
-    }
-    userProfile = { id: currentUserUuid, kos_id: newKos.id, role: 'owner' };
-    userKosId = newKos.id; userRole = 'owner';
+    const newKosId = await api('/rpc/create_kos_for_owner', {
+      method: 'POST',
+      body: JSON.stringify({ input_name: nama, input_city: kota, input_code: kode })
+    });
+    if (!newKosId) throw new Error('Gagal membuat kos');
+    userProfile = { id: currentUserUuid, kos_id: newKosId, role: 'owner' };
+    userKosId = newKosId; userRole = 'owner';
     document.getElementById('kos-info-name').textContent = '🏠 ' + nama + ' — ' + kota;
     document.getElementById('kos-info-code').textContent = 'Kode: ' + kode;
     document.getElementById('kos-info-bar').classList.remove('hidden');
@@ -732,19 +728,18 @@ async function createKos(e) {
 
 async function joinKos(e) {
   e.preventDefault();
-  setOnboardingMessage('Mencari kos...');
-  const kode = document.getElementById('kos-kode').value.trim();
+  setOnboardingMessage('Memeriksa kode undangan...');
+  const kode = document.getElementById('kos-kode').value.trim().toUpperCase();
   if (!kode) { setOnboardingMessage('Kode undangan wajib diisi.'); return false; }
   try {
-    const kosRows = await api('/kos?select=*&kode_undangan=eq.' + encodeURIComponent(kode));
-    if (!Array.isArray(kosRows) || kosRows.length === 0) { setOnboardingMessage('❌ Kode undangan tidak ditemukan.'); return false; }
+    const kosId = await api('/rpc/join_kos_by_code', {
+      method: 'POST',
+      body: JSON.stringify({ input_code: kode })
+    });
+    if (!kosId) throw new Error('Kode tidak ditemukan');
+    const kosRows = await api('/kos?select=id,nama_kos,kota,kode_undangan&id=eq.' + encodeURIComponent(kosId));
+    if (!Array.isArray(kosRows) || kosRows.length === 0) throw new Error('Kos berhasil ditemukan tetapi tidak dapat dimuat');
     const kos = kosRows[0];
-    const existingProfile = await api('/profiles?select=*&id=eq.' + encodeURIComponent(currentUserUuid));
-    if (Array.isArray(existingProfile) && existingProfile.length > 0) {
-      await api('/profiles?id=eq.' + encodeURIComponent(currentUserUuid), { method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify({ kos_id: kos.id, role: 'tenant' }) });
-    } else {
-      await api('/profiles', { method: 'POST', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify({ id: currentUserUuid, kos_id: kos.id, role: 'tenant' }) });
-    }
     userProfile = { id: currentUserUuid, kos_id: kos.id, role: 'tenant' };
     userKosId = kos.id; userRole = 'tenant';
     document.getElementById('kos-info-name').textContent = '🏠 ' + (kos.nama_kos || '') + (kos.kota ? ' — ' + kos.kota : '');
@@ -1621,10 +1616,10 @@ async function importJSON(e) {
       if (!imported.kos_entries || !imported.token_entries) throw new Error('Format');
       if (!confirm('Import akan menambahkan data ke database online. Lanjutkan?')) return;
       for (const x of imported.kos_entries) {
-        await api('/kos_entries', { method:'POST', headers:{'Prefer':'return=minimal'}, body:JSON.stringify({nama:x.nama || 'Tidak diketahui', kamar:x.kamar, bulan:x.bulan || getCurrentBulan(), jumlah:Number(x.jumlah||0), tanggal:x.tanggal, periode:getCurrentPeriode()}) });
+        await api('/kos_entries', { method:'POST', headers:{'Prefer':'return=minimal'}, body:JSON.stringify({nama:x.nama || 'Tidak diketahui', kamar:x.kamar, bulan:x.bulan || getCurrentBulan(), jumlah:Number(x.jumlah||0), tanggal:x.tanggal, periode:getCurrentPeriode(), user_id:currentUserUuid || null, kos_id:userKosId}) });
       }
       for (const x of imported.token_entries) {
-        await api('/token_entries', { method:'POST', headers:{'Prefer':'return=minimal'}, body:JSON.stringify({nama:x.nama || 'Tidak diketahui', kamar:x.kamar, jumlah:Number(x.jumlah||0), nomor_token:NOMOR_TOKEN_LISTRIK, tanggal:x.tanggal, periode:getCurrentPeriode()}) });
+        await api('/token_entries', { method:'POST', headers:{'Prefer':'return=minimal'}, body:JSON.stringify({nama:x.nama || 'Tidak diketahui', kamar:x.kamar, jumlah:Number(x.jumlah||0), nomor_token:NOMOR_TOKEN_LISTRIK, tanggal:x.tanggal, periode:getCurrentPeriode(), user_id:currentUserUuid || null, kos_id:userKosId}) });
       }
       await loadData(); showToast('📁 Data berhasil di-import ke database online!');
     } catch(err) { console.error(err); showToast('❌ Gagal import data.'); }
