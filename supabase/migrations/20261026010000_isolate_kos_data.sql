@@ -2,6 +2,20 @@
 -- Jalankan sekali di SQL Editor project Supabase yang dipakai aplikasi.
 -- Catatan: schema live menggunakan UUID untuk public.kos.id dan profiles.kos_id.
 
+-- Skema live sebelumnya belum memiliki user_id/status pada tabel transaksi.
+-- Tambahkan sebelum membuat policy yang mereferensikan kolom tersebut.
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS full_name text,
+  ADD COLUMN IF NOT EXISTS kamar integer;
+
+ALTER TABLE public.kos_entries
+  ADD COLUMN IF NOT EXISTS user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS status text NOT NULL DEFAULT 'lunas';
+
+ALTER TABLE public.token_entries
+  ADD COLUMN IF NOT EXISTS user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS status text NOT NULL DEFAULT 'lunas';
+
 CREATE SCHEMA IF NOT EXISTS private;
 REVOKE ALL ON SCHEMA private FROM PUBLIC, anon;
 GRANT USAGE ON SCHEMA private TO authenticated;
@@ -194,9 +208,12 @@ GRANT SELECT, INSERT, UPDATE (status) ON TABLE public.tagihan_token TO authentic
 CREATE POLICY "tagihan select own or owner kos"
   ON public.tagihan_token FOR SELECT TO authenticated
   USING (
-    user_id = (SELECT auth.uid())
-    OR private.owns_kos(kos_id)
-    OR private.is_app_admin()
+    private.can_access_kos(kos_id)
+    AND (
+      user_id = (SELECT auth.uid())
+      OR private.owns_kos(kos_id)
+      OR private.is_app_admin()
+    )
   );
 CREATE POLICY "tagihan insert owner for tenant in own kos"
   ON public.tagihan_token FOR INSERT TO authenticated
