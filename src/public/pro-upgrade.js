@@ -17,6 +17,16 @@
   let lastDataFingerprint = '';
 
   const safeText = value => String(value == null ? '' : value);
+  // Nilai kos aktif (jumlah pintu, harga, nomor token, rekening) diambil dari pengaturan per kos di index.html.
+  const doorCount = () => getDoorCount();
+  const monthlyRent = () => getMonthlyRent();
+  const tokenNumberLabel = () => getKosTokenNumber() || 'Belum diatur';
+  const kosNameLabel = () => (activeKos && activeKos.nama_kos) || 'BukuKosOnline';
+  function bankLine() {
+    const parts = [getKosBankName(), getKosBankNumber()].filter(Boolean).join(' ');
+    if (!parts) return 'Rekening pembayaran belum diatur';
+    return 'Transfer ke ' + parts + (getKosBankHolder() ? ' — a.n. ' + getKosBankHolder() : '');
+  }
   const lower = value => safeText(value).trim().toLocaleLowerCase('id-ID');
 
   function monthIndexFromName(value) {
@@ -130,8 +140,8 @@
 
   function kosStatus(entry) {
     const amountPaid = kosRoomTotal(entry.kamar, cycleKey(entry, 'kos'));
-    const paid = amountPaid >= KOS_PER_BULAN;
-    return { ...dueInfo(entry, paid), amountPaid, remaining: Math.max(0, KOS_PER_BULAN - amountPaid) };
+    const paid = amountPaid >= monthlyRent();
+    return { ...dueInfo(entry, paid), amountPaid, remaining: Math.max(0, monthlyRent() - amountPaid) };
   }
 
   function tokenIsPaid(entry) {
@@ -147,7 +157,7 @@
   function buildKosDisplayRows() {
     const rows = data.kos_entries.map(entry => ({ ...entry, _virtual: false, _status: kosStatus(entry) }));
     const currentKey = currentCycleKey();
-    for (let room = 1; room <= JUMLAH_KAMAR; room++) {
+    for (let room = 1; room <= doorCount(); room++) {
       const currentEntries = data.kos_entries.filter(entry => String(entry.kamar) === String(room) && cycleKey(entry, 'kos') === currentKey);
       if (currentEntries.length) continue;
       const now = new Date();
@@ -156,9 +166,9 @@
         id: `pending-kos-${currentKey}-${room}`,
         nama: latestOccupant('kos', room), kamar: room,
         bulan: getCurrentBulan(), periode: currentPeriodLabel(),
-        jumlah: KOS_PER_BULAN, tanggal: dateToIsoLocal(due),
+        jumlah: monthlyRent(), tanggal: dateToIsoLocal(due),
         _virtual: true,
-        _status: { ...dueInfo({ bulan: getCurrentBulan(), periode: currentPeriodLabel(), tanggal: dateToIsoLocal(due) }, false), amountPaid: 0, remaining: KOS_PER_BULAN }
+        _status: { ...dueInfo({ bulan: getCurrentBulan(), periode: currentPeriodLabel(), tanggal: dateToIsoLocal(due) }, false), amountPaid: 0, remaining: monthlyRent() }
       };
       rows.push(virtual);
     }
@@ -168,7 +178,7 @@
   function buildTokenDisplayRows() {
     const rows = data.token_entries.map(entry => ({ ...entry, _virtual: false, _paid: tokenIsPaid(entry) }));
     const currentKey = currentCycleKey();
-    for (let room = 1; room <= JUMLAH_KAMAR; room++) {
+    for (let room = 1; room <= doorCount(); room++) {
       if (tokenRoomEntries(room, currentKey).length) continue;
       rows.push({
         id: `pending-token-${currentKey}-${room}`, nama: latestOccupant('token', room), kamar: room,
@@ -182,10 +192,10 @@
   function currentKosRoomSummary() {
     const summary = {};
     const key = currentCycleKey();
-    for (let room = 1; room <= JUMLAH_KAMAR; room++) {
+    for (let room = 1; room <= doorCount(); room++) {
       const entries = data.kos_entries.filter(entry => String(entry.kamar) === String(room) && cycleKey(entry, 'kos') === key);
       const total = entries.reduce((sum, entry) => sum + Number(entry.jumlah || 0), 0);
-      summary[room] = { total, entries, paid: total >= KOS_PER_BULAN };
+      summary[room] = { total, entries, paid: total >= monthlyRent() };
     }
     return summary;
   }
@@ -193,7 +203,7 @@
   function currentTokenRoomSummary() {
     const summary = {};
     const key = currentCycleKey();
-    for (let room = 1; room <= JUMLAH_KAMAR; room++) {
+    for (let room = 1; room <= doorCount(); room++) {
       const entries = tokenRoomEntries(room, key);
       summary[room] = { total: entries.reduce((sum, entry) => sum + Number(entry.jumlah || 0), 0), entries, paid: entries.length > 0 };
     }
@@ -207,11 +217,11 @@
     const summary = currentKosRoomSummary();
     const total = Object.values(summary).reduce((sum, room) => sum + room.total, 0);
     const paidRooms = Object.values(summary).filter(room => room.paid).length;
-    const target = JUMLAH_KAMAR * KOS_PER_BULAN;
+    const target = doorCount() * monthlyRent();
     const progress = target ? Math.min(100, Math.round(total / target * 100)) : 0;
     document.getElementById('kos-total').textContent = formatRupiah(total);
     document.getElementById('kos-sudah').textContent = paidRooms;
-    document.getElementById('kos-belum').textContent = JUMLAH_KAMAR - paidRooms;
+    document.getElementById('kos-belum').textContent = doorCount() - paidRooms;
     document.getElementById('kos-target').textContent = formatRupiah(target);
     document.getElementById('kos-progress-text').textContent = progress + '%';
     document.getElementById('kos-progress-bar').style.width = progress + '%';
@@ -223,7 +233,7 @@
     const grid = document.getElementById('kos-kamar-grid');
     if (!grid) return;
     grid.innerHTML = '';
-    for (let room = 1; room <= JUMLAH_KAMAR; room++) {
+    for (let room = 1; room <= doorCount(); room++) {
       const result = summary[room];
       const state = dueInfo({ bulan: getCurrentBulan(), periode: currentPeriodLabel() }, result.paid);
       const card = document.createElement('div');
@@ -233,7 +243,7 @@
       card.setAttribute('aria-label', `Pintu ${room}: ${state.label}`);
       card.onclick = () => selectKamarKos(room);
       card.onkeydown = event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectKamarKos(room); } };
-      card.innerHTML = `<div class="kamar-num">Pintu ${room}</div><div class="kamar-status">${result.paid ? '✓ Lunas' : escapeHtml(state.label)}</div><div class="kamar-amount">${formatRupiah(result.paid ? result.total : Math.max(0, KOS_PER_BULAN - result.total))}</div>`;
+      card.innerHTML = `<div class="kamar-num">Pintu ${room}</div><div class="kamar-status">${result.paid ? '✓ Lunas' : escapeHtml(state.label)}</div><div class="kamar-amount">${formatRupiah(result.paid ? result.total : Math.max(0, monthlyRent() - result.total))}</div>`;
       grid.appendChild(card);
     }
   }
@@ -247,7 +257,7 @@
     document.getElementById('token-total').textContent = formatRupiah(total);
     document.getElementById('token-kwh').textContent = kwh + ' kWh';
     document.getElementById('token-sudah').textContent = filled;
-    document.getElementById('token-belum').textContent = JUMLAH_KAMAR - filled;
+    document.getElementById('token-belum').textContent = doorCount() - filled;
   }
 
   function renderTokenKamar() {
@@ -255,7 +265,7 @@
     const grid = document.getElementById('token-kamar-grid');
     if (!grid) return;
     grid.innerHTML = '';
-    for (let room = 1; room <= JUMLAH_KAMAR; room++) {
+    for (let room = 1; room <= doorCount(); room++) {
       const result = summary[room];
       const card = document.createElement('div');
       card.className = `kamar-item ${result.paid ? 'paid' : 'pending'}`;
@@ -293,7 +303,7 @@
     if (!host) return null;
     if (host.dataset.proReady === 'true') return host;
     const isKos = type === 'kos';
-    const roomOptions = Array.from({ length: JUMLAH_KAMAR }, (_, index) => `<option value="${index + 1}">Pintu ${index + 1}</option>`).join('');
+    const roomOptions = Array.from({ length: doorCount() }, (_, index) => `<option value="${index + 1}">Pintu ${index + 1}</option>`).join('');
     host.innerHTML = `
       <div class="table-toolbar" aria-label="Filter data ${isKos ? 'kos' : 'token'}">
         <div class="filter-grid">
@@ -348,11 +358,11 @@
 
   function rowActionHtml(type, row, paid) {
     const id = escapeHtml(row.id);
-    const adminActions = isAdmin && !row._virtual
+    const adminActions = (isAdmin || userRole === 'owner') && !row._virtual
       ? `<button type="button" class="btn btn-sm btn-warning" onclick="${type === 'kos' ? 'editKos' : 'editToken'}('${id}')">Edit</button><button type="button" class="btn btn-sm btn-danger" onclick="${type === 'kos' ? 'hapusKos' : 'hapusToken'}('${id}')">Hapus</button>`
       : '';
     if (type === 'kos' && !paid) {
-      const due = row._status ? row._status.remaining : Math.max(0, KOS_PER_BULAN - kosRoomTotal(row.kamar, cycleKey(row, 'kos')));
+      const due = row._status ? row._status.remaining : Math.max(0, monthlyRent() - kosRoomTotal(row.kamar, cycleKey(row, 'kos')));
       const url = paymentReminderUrl(row, due);
       return `<div class="row-actions"><a class="btn btn-success btn-sm wa-reminder" target="_blank" rel="noopener noreferrer" href="${escapeHtml(url)}">Tagih via WA</a>${adminActions}</div>`;
     }
@@ -362,9 +372,19 @@
     return adminActions ? `<div class="row-actions">${adminActions}</div>` : '<span class="muted-cell">—</span>';
   }
 
+  function refreshDoorFilter(type) {
+    const select = document.getElementById(`${type}-filter-door`);
+    if (!select || select.options.length - 1 === doorCount()) return;
+    const previous = select.value;
+    select.innerHTML = '<option value="">Semua pintu</option>' + Array.from({ length: doorCount() }, (_, index) => `<option value="${index + 1}">Pintu ${index + 1}</option>`).join('');
+    select.value = Number(previous) <= doorCount() ? previous : '';
+    tableState[type].door = select.value;
+  }
+
   function renderHistory(type) {
     const host = ensureHistoryStructure(type);
     if (!host) return;
+    refreshDoorFilter(type);
     const state = tableState[type];
     const rows = getRows(type);
     updateMonthFilter(type, rows);
@@ -436,7 +456,7 @@
     const tokenValues = periods.map(period => data.token_entries.filter(entry => lower(entry.periode) === period.key).reduce((sum, entry) => sum + Number(entry.jumlah || 0), 0));
     const roomSummary = currentKosRoomSummary();
     const paid = Object.values(roomSummary).filter(room => room.paid).length;
-    const unpaid = Math.max(0, JUMLAH_KAMAR - paid);
+    const unpaid = Math.max(0, doorCount() - paid);
     if (revenueChart) {
       revenueChart.data.labels = periods.map(period => period.label);
       revenueChart.data.datasets[0].data = kosValues;
@@ -467,6 +487,7 @@
   function proRenderAll() {
     renderKosStats(); renderKosKamar(); renderKosRiwayat();
     renderTokenStats(); renderTokenKamar(); renderTokenRiwayat(); renderDashboardCharts();
+    if (typeof updateRoleBasedUI === 'function') updateRoleBasedUI();
   }
 
   async function storageRequest(path, options) {
@@ -515,7 +536,8 @@
     validateProof(file);
     const extension = file.type === 'image/png' ? 'png' : 'jpg';
     const randomId = window.crypto && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-    const path = `${type}/${randomId}.${extension}`;
+    if (!userKosId) throw new Error('Akun belum terhubung ke kos.');
+    const path = `${userKosId}/${type}/${randomId}.${extension}`;
     await storageRequest(`/object/${PRO_BUCKET}/${encodeObjectPath(path)}`, {
       method: 'POST', headers: { 'Content-Type': file.type, 'x-upsert': 'false' }, body: file
     });
@@ -604,7 +626,7 @@
   function migrationHelp(error) {
     const message = safeText(error && error.message).toLowerCase();
     return message.includes('bukti_path') || message.includes(PRO_BUCKET) || message.includes('bucket') || message.includes('schema cache') || message.includes('column')
-      ? 'Fitur bukti perlu migrasi Supabase. Jalankan supabase/pro_upgrade.sql di SQL Editor, lalu coba lagi.'
+      ? 'Fitur bukti perlu migrasi Supabase. Jalankan migrasi terbaru di folder supabase/migrations lewat SQL Editor, lalu coba lagi.'
       : '';
   }
 
@@ -615,7 +637,7 @@
     const current = document.getElementById(`${type}-current-proof`);
     if (current) { current.classList.add('hidden'); current.dataset.path = ''; }
     if (type === 'kos') {
-      document.getElementById('kos-jumlah').value = KOS_PER_BULAN;
+      document.getElementById('kos-jumlah').value = monthlyRent();
       document.getElementById('kos-tanggal').value = new Date().toISOString().slice(0, 10);
       setKosSubmitMode(false);
     } else {
@@ -687,7 +709,7 @@
         editingEntry = null;
         showToast('✅ Data token diperbarui.');
       } else {
-        await api('/token_entries', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify({ ...payload, nomor_token: NOMOR_TOKEN_LISTRIK, periode: getCurrentPeriode() }) });
+        await api('/token_entries', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify({ ...payload, nomor_token: getKosTokenNumber() || null, periode: getCurrentPeriode() }) });
         showToast(`✅ Isi token ${formatRupiah(jumlah)} dari ${nama} tersimpan.`);
       }
       await finishFormSave('token', newPath, oldPath);
@@ -702,26 +724,15 @@
   window.submitKos = submitKosPro;
   window.submitToken = submitTokenPro;
 
-  function proLoadData(showMessage) {
-    if (syncing) return Promise.resolve();
-    syncing = true;
-    return Promise.all([
-      api('/kos_entries?select=*&order=tanggal.desc,created_at.desc'),
-      api('/token_entries?select=*&order=tanggal.desc,created_at.desc')
-    ]).then(async ([kos, token]) => {
-      const next = { kos_entries: Array.isArray(kos) ? kos : [], token_entries: Array.isArray(token) ? token : [], periode: getCurrentPeriode() };
-      const fingerprint = JSON.stringify([next.kos_entries, next.token_entries, next.periode]);
-      data = next;
-      await hydrateProofUrls(next);
-      if (fingerprint !== lastDataFingerprint) {
-        lastDataFingerprint = fingerprint;
-        proRenderAll();
-      }
-      if (showMessage) showToast('☁️ Data berhasil disinkronkan.');
-    }).catch(error => {
-      console.error(error);
-      showToast('❌ Gagal memuat data online. Periksa koneksi Supabase.');
-    }).finally(() => { syncing = false; });
+  const baseLoadData = window.loadData;
+  async function proLoadData(showMessage) {
+    await baseLoadData(showMessage);
+    try { await hydrateProofUrls(data); } catch (error) { console.warn(error); }
+    const fingerprint = JSON.stringify([data.kos_entries.map(e => e.bukti_path), data.token_entries.map(e => e.bukti_path)]);
+    if (fingerprint !== lastDataFingerprint) {
+      lastDataFingerprint = fingerprint;
+      renderKosRiwayat(); renderTokenRiwayat();
+    }
   }
 
   window.loadData = proLoadData;
@@ -746,19 +757,21 @@
     const tokenRows = entriesForCycle('token', currentCycleKey());
     const kosSummary = currentKosRoomSummary();
     const tokenSummary = currentTokenRoomSummary();
-    let text = `*BUKUKOSONLINE — LAPORAN BULANAN*\nPeriode: ${currentPeriodLabel()}\n\n*PEMBAYARAN KOS*\nTerkumpul: ${formatRupiah(totalOf(entriesForCycle('kos', currentCycleKey())))}\n`;
-    for (let room = 1; room <= JUMLAH_KAMAR; room++) text += `Pintu ${room}: ${kosSummary[room].paid ? '✅ Lunas' : '🔴 Belum lunas — ' + formatRupiah(Math.max(0, KOS_PER_BULAN - kosSummary[room].total))}\n`;
-    text += `\n*TOKEN LISTRIK*\nNomor token: ${NOMOR_TOKEN_LISTRIK}\nTotal: ${formatRupiah(totalOf(tokenRows))}\n`;
-    for (let room = 1; room <= JUMLAH_KAMAR; room++) text += `Pintu ${room}: ${tokenSummary[room].paid ? '✅ Sudah isi' : 'Belum isi'}\n`;
-    text += '\n*Rekening BRI: 794101019781531 — a.n. Kakak Keli*';
+    let text = `*${kosNameLabel().toUpperCase()} — LAPORAN BULANAN*\nPeriode: ${currentPeriodLabel()}\n\n*PEMBAYARAN KOS*\nTerkumpul: ${formatRupiah(totalOf(entriesForCycle('kos', currentCycleKey())))}\n`;
+    for (let room = 1; room <= doorCount(); room++) text += `Pintu ${room}: ${kosSummary[room].paid ? '✅ Lunas' : '🔴 Belum lunas — ' + formatRupiah(Math.max(0, monthlyRent() - kosSummary[room].total))}\n`;
+    if (isSharedToken()) {
+      text += `\n*TOKEN LISTRIK*\nNomor token: ${tokenNumberLabel()}\nTotal: ${formatRupiah(totalOf(tokenRows))}\n`;
+      for (let room = 1; room <= doorCount(); room++) text += `Pintu ${room}: ${tokenSummary[room].paid ? '✅ Sudah isi' : 'Belum isi'}\n`;
+    }
+    text += `\n*${bankLine()}*`;
     showExportText(text);
   }
 
   function exportWhatsAppKosPro() {
     const summary = currentKosRoomSummary();
-    let text = `*BUKUKOSONLINE — REKAP KOS*\nPeriode: ${currentPeriodLabel()}\nTerkumpul: ${formatRupiah(Object.values(summary).reduce((sum, room) => sum + room.total, 0))}\n\n`;
-    for (let room = 1; room <= JUMLAH_KAMAR; room++) text += `Pintu ${room}: ${summary[room].paid ? '✅ Lunas' : 'Belum — ' + formatRupiah(Math.max(0, KOS_PER_BULAN - summary[room].total))}\n`;
-    text += '\nTransfer ke BRI 794101019781531 — a.n. Kakak Keli';
+    let text = `*${kosNameLabel().toUpperCase()} — REKAP KOS*\nPeriode: ${currentPeriodLabel()}\nTerkumpul: ${formatRupiah(Object.values(summary).reduce((sum, room) => sum + room.total, 0))}\n\n`;
+    for (let room = 1; room <= doorCount(); room++) text += `Pintu ${room}: ${summary[room].paid ? '✅ Lunas' : 'Belum — ' + formatRupiah(Math.max(0, monthlyRent() - summary[room].total))}\n`;
+    text += `\n${bankLine()}`;
     showExportText(text);
   }
 
@@ -767,8 +780,8 @@
     const rows = entriesForCycle('token', currentCycleKey());
     const total = totalOf(rows);
     const kwh = Math.round(total / TARIF_PER_KWH * 10) / 10;
-    let text = `*BUKUKOSONLINE — REKAP TOKEN LISTRIK*\nPeriode: ${currentPeriodLabel()}\nNomor token: ${NOMOR_TOKEN_LISTRIK}\nTotal isi: ${formatRupiah(total)} · Estimasi ${kwh} kWh\n\n`;
-    for (let room = 1; room <= JUMLAH_KAMAR; room++) text += `Pintu ${room}: ${summary[room].paid ? '✅ Sudah isi' : 'Belum isi'}\n`;
+    let text = `*${kosNameLabel().toUpperCase()} — REKAP TOKEN LISTRIK*\nPeriode: ${currentPeriodLabel()}\nNomor token: ${tokenNumberLabel()}\nTotal isi: ${formatRupiah(total)} · Estimasi ${kwh} kWh\n\n`;
+    for (let room = 1; room <= doorCount(); room++) text += `Pintu ${room}: ${summary[room].paid ? '✅ Sudah isi' : 'Belum isi'}\n`;
     showExportText(text);
   }
 
@@ -825,10 +838,10 @@
     const kosTotal = totalOf(entriesForCycle('kos', currentCycleKey()));
     const tokenTotal = totalOf(entriesForCycle('token', currentCycleKey()));
     const summaryRows = [
-      ['BukuKosOnline'], ['Laporan Bulanan', currentPeriodLabel()], [],
+      [kosNameLabel()], ['Laporan Bulanan', currentPeriodLabel()], [],
       ['Ringkasan', 'Nilai'],
       ['Pembayaran kos terkumpul', kosTotal], ['Pintu lunas', Object.values(currentKosRoomSummary()).filter(room => room.paid).length],
-      ['Pintu belum lunas', JUMLAH_KAMAR - Object.values(currentKosRoomSummary()).filter(room => room.paid).length],
+      ['Pintu belum lunas', doorCount() - Object.values(currentKosRoomSummary()).filter(room => room.paid).length],
       ['Pengisian token terkumpul', tokenTotal], ['Estimasi token', `${Math.round(tokenTotal / TARIF_PER_KWH * 10) / 10} kWh`]
     ];
     const kosRows = [['BukuKosOnline'], [`Laporan pembayaran kos — ${currentPeriodLabel()}`], [], ['Tanggal', 'Nama Penghuni', 'Pintu', 'Bulan', 'Jumlah (Rp)', 'Status']];
@@ -874,7 +887,7 @@
   function pdfDrawHeader(doc, subtitle, pageNo) {
     const width = doc.internal.pageSize.getWidth();
     doc.setFillColor(30, 64, 175); doc.rect(0, 0, width, 26, 'F');
-    doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(16); doc.text('BukuKosOnline', 14, 12);
+    doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(16); doc.text(kosNameLabel(), 14, 12);
     doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.text(subtitle, 14, 20);
     doc.setFontSize(8); doc.text(`Halaman ${pageNo}`, width - 14, 20, { align: 'right' });
     doc.setTextColor(30, 41, 59);
@@ -933,16 +946,6 @@
   }
 
   function installGlobalWrappers() {
-    window.copyRek = async function () {
-      const number = '7941 0101 9781 531';
-      try { await navigator.clipboard.writeText(number); showToast('Nomor berhasil disalin'); }
-      catch (_) { showToast('Nomor rekening: ' + number); }
-    };
-    window.copyTokenNumber = async function () {
-      try { await navigator.clipboard.writeText(NOMOR_TOKEN_LISTRIK); showToast('Nomor token berhasil disalin'); }
-      catch (_) { showToast('Nomor token: ' + NOMOR_TOKEN_LISTRIK); }
-    };
-
     const originalStartCreate = window.startCreate;
     if (typeof originalStartCreate === 'function') {
       window.startCreate = function (type) {

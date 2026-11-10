@@ -39,7 +39,7 @@
   th, td { padding: 8px 6px; text-align: left; border-bottom: 1px solid #e2e8f0; }
   th { font-weight: 700; color: #64748b; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
   .kamar-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 10px; }
-  @media(min-width: 500px) { .kamar-grid { grid-template-columns: repeat(7, 1fr); } }
+  @media(min-width: 500px) { .kamar-grid { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); } }
   .kamar-item { text-align: center; padding: 10px 3px; border-radius: 10px; border: 2px solid #e2e8f0; cursor: pointer; transition: all 0.2s; background: #fff; }
   .kamar-item.paid { border-color: #22c55e; background: #f0fdf4; }
   .kamar-item.unpaid { border-color: #ef4444; background: #fef2f2; }
@@ -229,12 +229,29 @@
   <div id="onboarding-owner" class="onboarding-section">
     <form id="onboarding-owner-form" onsubmit="return createKos(event)">
       <div class="form-group">
-        <label for="kos-nama">Nama Kos</label>
-        <input type="text" id="kos-nama" placeholder="Contoh: Kos Endy Barokah" required>
+        <label for="onboard-kos-nama">Nama Kos</label>
+        <input type="text" id="onboard-kos-nama" placeholder="Contoh: Kos Endy Barokah" required>
       </div>
       <div class="form-group">
-        <label for="kos-kota">Kota</label>
-        <input type="text" id="kos-kota" placeholder="Contoh: Depok" required>
+        <label for="onboard-kos-kota">Kota</label>
+        <input type="text" id="onboard-kos-kota" placeholder="Contoh: Depok" required>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="kos-jumlah-pintu">Jumlah Pintu / Kamar</label>
+          <input type="number" id="kos-jumlah-pintu" min="1" max="500" step="1" value="10" required>
+        </div>
+        <div class="form-group">
+          <label for="kos-harga">Harga Kos per Bulan (Rp)</label>
+          <input type="number" id="kos-harga" min="0" step="1000" value="500000" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="kos-mode-token">Listrik / Token PLN</label>
+        <select id="kos-mode-token" required>
+          <option value="bersama">1 meter token dipakai bersama (biaya token dibagi ke penyewa)</option>
+          <option value="per_pintu">Setiap pintu punya token sendiri (penyewa hanya bayar kos)</option>
+        </select>
       </div>
       <button type="submit" class="btn btn-primary" style="width:100%;">Buat Kos</button>
     </form>
@@ -244,14 +261,18 @@
     <form id="onboarding-tenant-form" onsubmit="return joinKos(event)">
       <div class="form-group">
         <label for="kos-kode">Kode Undangan</label>
-        <input type="text" id="kos-kode" placeholder="Masukkan kode dari pemilik kos" required>
+        <input type="text" id="kos-kode" placeholder="Masukkan kode dari pemilik kos" maxlength="6" autocapitalize="characters" required>
+      </div>
+      <div class="form-group">
+        <label for="kos-pintu-saya">Nomor Pintu / Kamar Saya</label>
+        <input type="number" id="kos-pintu-saya" min="1" max="500" step="1" placeholder="Contoh: 3" required>
       </div>
       <button type="submit" class="btn btn-primary" style="width:100%;">Gabung Kos</button>
     </form>
   </div>
   <div id="onboarding-message" class="auth-error hidden" role="status" aria-live="polite"></div>
 </div>
-<div id="online-status" class="hidden" style="background:#dcfce7;color:#166534;border-radius:10px;padding:8px 12px;margin-bottom:10px;text-align:center;font-size:12px;font-weight:700;">☁️ Mode Online — data dibagikan ke semua teman</div>
+<div id="online-status" class="hidden" style="background:#dcfce7;color:#166534;border-radius:10px;padding:8px 12px;margin-bottom:10px;text-align:center;font-size:12px;font-weight:700;">☁️ Mode Online — data hanya terlihat oleh anggota kos Anda</div>
 <nav id="app-navigation" class="page-nav hidden" aria-label="Navigasi utama"></nav>
 <main id="page-container" class="hidden"></main>
 
@@ -273,18 +294,12 @@
   <div class="card-title">👥 Ringkasan Penghuni Kos</div>
   <div id="owner-payment-status" class="info-text" style="margin-bottom:10px;font-weight:700;color:#b91c1c;">Status Pembayaran: memuat…</div>
   <div id="owner-tenant-summary"></div>
-  <div id="auto-split-section" style="margin-top:16px;border-top:1px solid #e2e8f0;padding-top:16px;">
+  <div id="auto-split-section" class="token-feature" style="margin-top:16px;border-top:1px solid #e2e8f0;padding-top:16px;">
     <div class="card-title" style="margin-bottom:8px;">⚡ Beli Token & Bagi Rata</div>
     <form id="form-auto-split" onsubmit="return submitAutoSplitToken(event)">
-      <div class="form-row">
-        <div class="form-group">
-          <label>Jumlah Token (Rp)</label>
-          <input type="number" id="split-jumlah" placeholder="Contoh: 600000" min="1" step="1" oninput="updateTokenSplitPreview()" required>
-        </div>
-        <div class="form-group">
-          <label>Jumlah Pintu</label>
-          <input type="number" id="split-pintu" min="1" max="50" step="1" oninput="updateTokenSplitPreview()" required>
-        </div>
+      <div class="form-group">
+        <label for="split-jumlah">Total Harga Token yang Dibeli (Rp)</label>
+        <input type="number" id="split-jumlah" placeholder="Contoh: 600000" min="1" step="1" oninput="updateTokenSplitPreview()" required>
       </div>
       <div id="split-preview" class="info-text" style="margin:0 0 10px;">Bagian per pintu: —</div>
       <button type="submit" class="btn btn-primary" style="width:100%;">Beli Token & Bagi Rata</button>
@@ -390,7 +405,7 @@
       </div>
       <div class="form-group">
         <label>Jumlah Bayar (Rp)</label>
-        <input type="number" id="kos-jumlah" value="0" min="1" step="1000" required>
+        <input type="number" id="kos-jumlah" value="0" min="1" step="1" required>
       </div>
       <div class="form-group upload-group">
         <label for="kos-bukti">Bukti Transfer <span class="upload-note">JPG/PNG · maksimal 2 MB · opsional</span></label>
@@ -413,7 +428,7 @@
 </div>
 
 <!-- ==================== TAB TOKEN ==================== -->
-<div class="card hidden" id="kos-token-card" style="border:2px solid #14b8a6;">
+<div class="card hidden token-feature" id="kos-token-card" style="border:2px solid #14b8a6;">
   <div class="card-title">⚡ Nomor Token Listrik Bersama</div>
   <div id="kos-token-number" style="font-size:26px;font-weight:800;letter-spacing:2px;text-align:center;padding:8px 0;cursor:pointer;" onclick="copyTokenNumber()" title="Klik untuk menyalin"></div>
   <div class="info-text" style="text-align:center;">Klik nomor token untuk menyalin.</div>
@@ -443,17 +458,6 @@
     </div>
   </div>
 
-  <div class="card hidden" id="owner-token-purchase-card" style="border:2px solid #14b8a6;">
-    <div class="card-title">⚡ Beli Token Bersama</div>
-    <form id="form-shared-token-purchase" onsubmit="return submitSharedTokenPurchase(event)">
-      <div class="form-group">
-        <label for="shared-token-total">Total Rupiah Token</label>
-        <input type="number" id="shared-token-total" min="1" step="1" placeholder="Contoh: 600000" oninput="updateSharedTokenPreview()" required>
-      </div>
-      <div id="shared-token-preview" class="info-text" aria-live="polite" style="margin:0 0 10px;">Pembagian per pintu akan dihitung dari pengaturan kos.</div>
-      <button type="submit" class="btn btn-primary" style="width:100%;">Simpan Pembagian Token</button>
-    </form>
-  </div>
 
   <!-- STATUS KAMAR TOKEN -->
   <div class="card">
@@ -483,7 +487,7 @@
       <div class="form-row">
         <div class="form-group">
           <label>Jumlah Isi (Rp)</label>
-          <input type="number" id="token-jumlah" placeholder="Contoh: 25000" min="1000" step="1000" required>
+          <input type="number" id="token-jumlah" placeholder="Contoh: 25000" min="1" step="1" required>
         </div>
         <div class="form-group">
           <label>Tanggal</label>
@@ -526,7 +530,7 @@
 </div>
 
 <div style="text-align:center; padding: 20px; color: #94a3b8; font-size: 11px;">
-  ☁️ Data tersimpan di database online dan dibagikan ke semua pengguna.<br>
+  ☁️ Data tersimpan online dan hanya dapat dilihat oleh pemilik serta penyewa kos ini.<br>
   Perubahan akan tersinkron otomatis ke perangkat lain.<br>
   Informasi pembayaran mengikuti kos yang sedang dipilih.
 </div>
@@ -537,11 +541,12 @@ const SUPABASE_URL = 'https://nnclbwtvcohiiptbakkz.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_HFYgoas0_PDzSDSMC3-ImQ_-_7A6zXW';
 const TARIF_PER_KWH = 1444;
 const DEFAULT_JUMLAH_PINTU = 7;
+const MAX_JUMLAH_PINTU = 500;
 const DEFAULT_HARGA_KOS = 300000;
 const API_BASE = SUPABASE_URL + '/rest/v1';
 const AUTH_BASE = SUPABASE_URL + '/auth/v1';
 
-let data = { kos_entries: [], token_entries: [], tagihan_token: [], unpaid_token_count: null, periode: getCurrentPeriode() };
+let data = { kos_entries: [], token_entries: [], tenant_profiles: [], tagihan_token: [], periode: getCurrentPeriode() };
 let syncing = false;
 let sessionToken = localStorage.getItem('bukukos_session') || '';
 let currentUserEmail = '';
@@ -551,15 +556,19 @@ let userProfile = null;
 let userKosId = null;
 let userRole = null;
 let activeKos = null;
+let currentUserMeta = {};
 
 function getDoorCount() {
   const count = Number(activeKos?.jumlah_pintu ?? DEFAULT_JUMLAH_PINTU);
-  return Number.isInteger(count) && count >= 1 && count <= 50 ? count : DEFAULT_JUMLAH_PINTU;
+  return Number.isInteger(count) && count >= 1 && count <= MAX_JUMLAH_PINTU ? count : DEFAULT_JUMLAH_PINTU;
 }
 function getMonthlyRent() {
   const rent = Number(activeKos?.harga_kos ?? DEFAULT_HARGA_KOS);
   return Number.isInteger(rent) && rent >= 0 ? rent : 0;
 }
+function getTokenMode() { return activeKos?.mode_token === 'per_pintu' ? 'per_pintu' : 'bersama'; }
+function isSharedToken() { return getTokenMode() === 'bersama'; }
+function isCurrentPeriod(entry) { return String(entry?.periode || '') === getCurrentPeriode(); }
 function getKosTokenNumber() { return String(activeKos?.nomor_token || '').trim(); }
 function getKosBankName() { return String(activeKos?.rekening_bank || '').trim(); }
 function getKosBankNumber() { return String(activeKos?.rekening_no || '').trim(); }
@@ -600,19 +609,6 @@ async function api(path, options = {}) {
   if (response.status === 204) return null;
   const text = await response.text();
   return text ? JSON.parse(text) : null;
-}
-
-async function countUnpaidTokenBills(kosId) {
-  const url = API_BASE + '/tagihan_token?select=id&kos_id=eq.' + encodeURIComponent(kosId) + '&status=eq.belum_lunas';
-  const response = await fetch(url, {
-    method: 'HEAD',
-    headers: { ...getSupabaseHeaders(), 'Prefer': 'count=exact', 'Range': '0-0' }
-  });
-  if (!response.ok) throw new Error(await response.text() || ('HTTP ' + response.status));
-  const contentRange = response.headers.get('Content-Range') || '';
-  const match = contentRange.match(/\/(\d+)$/);
-  if (!match) throw new Error('COUNT exact tidak tersedia dari tagihan_token.');
-  return Number(match[1]);
 }
 
 function setAuthMessage(message) {
@@ -680,7 +676,8 @@ async function checkProfile() {
     const user = await response.json();
     currentUserUuid = user.id;
     const rows = await api('/profiles?select=*&id=eq.' + encodeURIComponent(user.id));
-    if (Array.isArray(rows) && rows.length > 0) {
+    currentUserMeta = user.user_metadata || {};
+    if (Array.isArray(rows) && rows.length > 0 && rows[0].kos_id) {
       userProfile = rows[0];
       userKosId = userProfile.kos_id || null;
       userRole = userProfile.role || null;
@@ -721,8 +718,9 @@ function applyKosSettingsToUI() {
   const bankInfo = document.getElementById('kos-bank-info');
   const tokenCard = document.getElementById('kos-token-card');
   const tokenNumber = document.getElementById('kos-token-number');
-  const sharedPurchaseCard = document.getElementById('owner-token-purchase-card');
-  if (sharedPurchaseCard) sharedPurchaseCard.classList.toggle('hidden', userRole !== 'owner');
+  const shared = isSharedToken();
+  document.querySelectorAll('.token-feature').forEach(el => el.classList.toggle('hidden', !activeKos || !shared));
+  document.querySelectorAll('.owner-only').forEach(el => el.classList.toggle('hidden', userRole !== 'owner' && !isAdmin));
   if (bankCard) bankCard.classList.toggle('hidden', !activeKos);
   if (bankName) bankName.textContent = activeKos ? '🏦 ' + (getKosBankName() || 'Bank belum diatur') : '';
   if (bankNumber) bankNumber.textContent = getKosBankNumber();
@@ -730,17 +728,19 @@ function applyKosSettingsToUI() {
   if (bankInfo) bankInfo.textContent = activeKos
     ? (getKosBankNumber() ? '💡 Klik nomor rekening untuk copy | Kos: ' : 'Rekening belum diatur | Kos: ') + formatRupiah(rent) + '/bulan'
     : '';
-  if (tokenCard) tokenCard.classList.toggle('hidden', !activeKos);
   if (tokenNumber) {
     tokenNumber.textContent = getKosTokenNumber() || 'Nomor token belum diatur';
     tokenNumber.style.color = getKosTokenNumber() ? '' : '#64748b';
   }
   const rentInput = document.getElementById('kos-jumlah');
   if (rentInput && editingEntry?.type !== 'kos') rentInput.value = rent;
-  const splitDoors = document.getElementById('split-pintu');
-  if (splitDoors) { splitDoors.value = doorCount; splitDoors.max = doorCount; updateTokenSplitPreview(); }
-  updateSharedTokenPreview();
+  updateTokenSplitPreview();
+  const inviteCode = document.getElementById('settings-invite-code');
+  if (inviteCode) inviteCode.textContent = activeKos?.kode_undangan || '—';
   const settings = {
+    'settings-nama-kos': activeKos?.nama_kos || '',
+    'settings-kota': activeKos?.kota || '',
+    'settings-mode-token': getTokenMode(),
     'settings-jumlah-pintu': doorCount,
     'settings-rekening-bank': getKosBankName(),
     'settings-rekening-no': getKosBankNumber(),
@@ -752,6 +752,17 @@ function applyKosSettingsToUI() {
     const input = document.getElementById(id);
     if (input && document.activeElement !== input) input.value = value;
   });
+  updateSettingsTokenField();
+  rebuildNav();
+}
+
+function updateSettingsTokenField() {
+  const mode = document.getElementById('settings-mode-token');
+  const tokenInput = document.getElementById('settings-nomor-token');
+  if (!mode || !tokenInput) return;
+  const shared = mode.value === 'bersama';
+  tokenInput.closest('.form-group').classList.toggle('hidden', !shared);
+  tokenInput.required = shared;
 }
 
 async function saveKosSettings(e) {
@@ -763,25 +774,35 @@ async function saveKosSettings(e) {
   const jumlahPintu = Number(document.getElementById('settings-jumlah-pintu').value);
   const hargaKos = Number(document.getElementById('settings-harga-kos').value);
   const nomorToken = document.getElementById('settings-nomor-token').value.trim();
+  const modeToken = document.getElementById('settings-mode-token').value === 'per_pintu' ? 'per_pintu' : 'bersama';
+  const namaKos = document.getElementById('settings-nama-kos').value.trim();
+  const kota = document.getElementById('settings-kota').value.trim();
   const message = document.getElementById('kos-settings-message');
-  if (!Number.isInteger(jumlahPintu) || jumlahPintu < 1 || jumlahPintu > 50) {
-    if (message) message.textContent = 'Jumlah pintu harus angka bulat dari 1 sampai 50.';
+  if (!namaKos) {
+    if (message) message.textContent = 'Nama kos wajib diisi.';
+    return false;
+  }
+  if (!Number.isInteger(jumlahPintu) || jumlahPintu < 1 || jumlahPintu > MAX_JUMLAH_PINTU) {
+    if (message) message.textContent = 'Jumlah pintu harus angka bulat dari 1 sampai ' + MAX_JUMLAH_PINTU + '.';
     return false;
   }
   if (!Number.isInteger(hargaKos) || hargaKos < 0) {
     if (message) message.textContent = 'Harga kos harus berupa bilangan bulat rupiah.';
     return false;
   }
-  if (!/^\d{20}$/.test(nomorToken)) {
-    if (message) message.textContent = 'Nomor meter PLN harus tepat 20 digit angka.';
+  if (modeToken === 'bersama' && !/^\d{11,20}$/.test(nomorToken)) {
+    if (message) message.textContent = 'Nomor meter/ID pelanggan PLN harus 11–20 digit angka.';
     return false;
   }
   const settings = {
+    nama_kos: namaKos,
+    kota: kota || null,
+    mode_token: modeToken,
     jumlah_pintu: jumlahPintu,
     rekening_bank: document.getElementById('settings-rekening-bank').value.trim() || null,
     rekening_no: document.getElementById('settings-rekening-no').value.trim() || null,
     rekening_nama: document.getElementById('settings-rekening-nama').value.trim() || null,
-    nomor_token: nomorToken,
+    nomor_token: modeToken === 'bersama' ? nomorToken : (nomorToken || null),
     harga_kos: hargaKos
   };
   try {
@@ -816,24 +837,21 @@ async function refreshActiveKos() {
   return activeKos;
 }
 
-function generateInviteCode() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code = '';
-  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
-  return code;
-}
-
 async function createKos(e) {
   e.preventDefault();
   setOnboardingMessage('Membuat kos...');
-  const nama = document.getElementById('kos-nama').value.trim();
-  const kota = document.getElementById('kos-kota').value.trim();
+  const nama = document.getElementById('onboard-kos-nama').value.trim();
+  const kota = document.getElementById('onboard-kos-kota').value.trim();
+  const pintu = Number(document.getElementById('kos-jumlah-pintu').value);
+  const harga = Number(document.getElementById('kos-harga').value);
+  const modeToken = document.getElementById('kos-mode-token').value === 'per_pintu' ? 'per_pintu' : 'bersama';
   if (!nama || !kota) { setOnboardingMessage('Nama kos dan kota wajib diisi.'); return false; }
+  if (!Number.isInteger(pintu) || pintu < 1 || pintu > MAX_JUMLAH_PINTU) { setOnboardingMessage('Jumlah pintu harus 1 sampai ' + MAX_JUMLAH_PINTU + '.'); return false; }
+  if (!Number.isInteger(harga) || harga < 0) { setOnboardingMessage('Harga kos harus berupa angka rupiah.'); return false; }
   try {
-    const kode = generateInviteCode();
     const newKosId = await api('/rpc/create_kos_for_owner', {
       method: 'POST',
-      body: JSON.stringify({ input_name: nama, input_city: kota, input_code: kode })
+      body: JSON.stringify({ input_name: nama, input_city: kota, input_doors: pintu, input_rent: harga, input_token_mode: modeToken })
     });
     if (!newKosId) throw new Error('Gagal membuat kos');
     userProfile = { id: currentUserUuid, kos_id: newKosId, role: 'owner' };
@@ -842,7 +860,7 @@ async function createKos(e) {
     setOnboardingMessage('');
     setAppVisibility(true, currentUserEmail);
     rebuildNav();
-    showToast('✅ Kos "' + nama + '" berhasil dibuat. Kode undangan: ' + kode);
+    showToast('✅ Kos "' + nama + '" berhasil dibuat. Kode undangan: ' + (activeKos?.kode_undangan || '-'));
     navigate('/dashboard');
     await loadData(true);
   } catch (err) { setOnboardingMessage('❌ ' + err.message); }
@@ -853,17 +871,19 @@ async function joinKos(e) {
   e.preventDefault();
   setOnboardingMessage('Memeriksa kode undangan...');
   const kode = document.getElementById('kos-kode').value.trim().toUpperCase();
+  const kamar = Number(document.getElementById('kos-pintu-saya').value);
   if (!kode) { setOnboardingMessage('Kode undangan wajib diisi.'); return false; }
+  if (!Number.isInteger(kamar) || kamar < 1) { setOnboardingMessage('Nomor pintu wajib diisi.'); return false; }
   try {
     const kosId = await api('/rpc/join_kos_by_code', {
       method: 'POST',
-      body: JSON.stringify({ input_code: kode })
+      body: JSON.stringify({ input_code: kode, input_kamar: kamar })
     });
     if (!kosId) throw new Error('Kode tidak ditemukan');
     const kosRows = await api('/kos?select=*&id=eq.' + encodeURIComponent(kosId));
     if (!Array.isArray(kosRows) || kosRows.length === 0) throw new Error('Kos berhasil ditemukan tetapi tidak dapat dimuat');
     const kos = kosRows[0];
-    userProfile = { id: currentUserUuid, kos_id: kos.id, role: 'tenant' };
+    userProfile = { id: currentUserUuid, kos_id: kos.id, role: 'tenant', kamar, full_name: currentUserMeta.full_name || null };
     userKosId = kos.id; userRole = 'tenant';
     activeKos = kos;
     applyKosSettingsToUI();
@@ -1118,29 +1138,26 @@ async function checkSession() {
     const profile = await checkProfile();
     setAppVisibility(true, currentUserEmail);
     if (profile) { rebuildNav(); await loadData(true); renderRoute(); }
-    else { showToast('Selamat datang! Silakan lengkapi data kos Anda.'); }
+    else {
+      const kosNameInput = document.getElementById('onboard-kos-nama');
+      if (kosNameInput && !kosNameInput.value && currentUserMeta.kos_name) kosNameInput.value = currentUserMeta.kos_name;
+      showToast('Selamat datang! Pilih peran Anda: pemilik kos atau penyewa.');
+    }
   } catch (err) { logoutUser(); }
 }
 
+// Data selalu dibatasi ke kos milik/tempat pengguna; RLS Supabase menegakkan hal yang sama di server.
 function getDataFilters() {
-  const periode = encodeURIComponent(getCurrentPeriode());
-  if (userRole === 'owner' && userKosId) {
-    return {
-      kos: '/kos_entries?select=*&periode=eq.' + periode + '&kos_id=eq.' + encodeURIComponent(userKosId) + '&order=tanggal.desc,created_at.desc',
-      token: '/token_entries?select=*&periode=eq.' + periode + '&kos_id=eq.' + encodeURIComponent(userKosId) + '&order=tanggal.desc,created_at.desc',
-      profiles: '/profiles?select=*&kos_id=eq.' + encodeURIComponent(userKosId)
-    };
-  }
-  if (userRole === 'tenant' && currentUserUuid) {
-    return {
-      kos: '/kos_entries?select=*&periode=eq.' + periode + '&user_id=eq.' + encodeURIComponent(currentUserUuid) + '&order=tanggal.desc,created_at.desc',
-      token: '/token_entries?select=*&periode=eq.' + periode + '&kos_id=eq.' + encodeURIComponent(userKosId) + '&order=tanggal.desc,created_at.desc'
-    };
-  }
-  return {
-    kos: '/kos_entries?select=*&periode=eq.' + periode + '&order=tanggal.desc,created_at.desc',
-    token: '/token_entries?select=*&periode=eq.' + periode + '&order=tanggal.desc,created_at.desc'
+  if (!userKosId) return null;
+  const kos = encodeURIComponent(userKosId);
+  const order = '&order=tanggal.desc,created_at.desc';
+  const filters = {
+    kos: '/kos_entries?select=*&kos_id=eq.' + kos + order,
+    token: '/token_entries?select=*&kos_id=eq.' + kos + order,
+    tagihan: '/tagihan_token?select=*&kos_id=eq.' + kos + '&order=created_at.desc'
   };
+  if (userRole === 'owner') filters.profiles = '/profiles?select=*&kos_id=eq.' + kos + '&role=eq.tenant&order=kamar.asc';
+  return filters;
 }
 
 async function loadData(showMessage = false) {
@@ -1149,14 +1166,12 @@ async function loadData(showMessage = false) {
   try {
     const periode = getCurrentPeriode();
     const filters = getDataFilters();
-    const queries = [api(filters.kos), api(filters.token)];
+    if (!filters) return;
+    const queries = [api(filters.kos), api(filters.token), api(filters.tagihan).catch(err => { console.warn('Gagal memuat tagihan_token:', err.message); return []; })];
     let profilesIndex = null;
-    let kosIndex = null;
     if (filters.profiles) { profilesIndex = queries.length; queries.push(api(filters.profiles)); }
-    if (userKosId) {
-      kosIndex = queries.length;
-      queries.push(api('/kos?select=*&id=eq.' + encodeURIComponent(userKosId)));
-    }
+    const kosIndex = queries.length;
+    queries.push(api('/kos?select=*&id=eq.' + encodeURIComponent(userKosId)));
     const results = await Promise.all(queries);
     if (kosIndex !== null) {
       activeKos = Array.isArray(results[kosIndex]) && results[kosIndex].length ? results[kosIndex][0] : null;
@@ -1170,23 +1185,9 @@ async function loadData(showMessage = false) {
       kos_entries: Array.isArray(results[0]) ? results[0] : [],
       token_entries: Array.isArray(results[1]) ? results[1] : [],
       tenant_profiles: profilesIndex !== null && Array.isArray(results[profilesIndex]) ? results[profilesIndex] : [],
-      tagihan_token: [],
-      unpaid_token_count: null,
+      tagihan_token: Array.isArray(results[2]) ? results[2] : [],
       periode
     };
-    if (userRole === 'tenant' && currentUserUuid) {
-      try {
-        data.tagihan_token = await api('/tagihan_token?select=*&user_id=eq.' + encodeURIComponent(currentUserUuid) + '&status=eq.belum_lunas&order=created_at.desc');
-      } catch (tagihanError) {
-        console.warn('Gagal memuat tagihan_token:', tagihanError.message);
-      }
-    } else if (userRole === 'owner' && userKosId) {
-      try {
-        data.unpaid_token_count = await countUnpaidTokenBills(userKosId);
-      } catch (tagihanError) {
-        console.warn('Gagal menghitung tagihan_token:', tagihanError.message);
-      }
-    }
     renderAll();
     if (showMessage) showToast('☁️ Data berhasil disinkronkan.');
   } catch (e) {
@@ -1214,7 +1215,7 @@ function formatTanggal(tgl) {
 function getKamarSummaryKos() {
   const summary = {};
   for (let i = 1; i <= getDoorCount(); i++) summary[i] = { total: 0, entries: [] };
-  data.kos_entries.forEach(e => {
+  data.kos_entries.filter(isCurrentPeriod).forEach(e => {
     if (summary[e.kamar]) {
       summary[e.kamar].total += Number(e.jumlah || 0);
       summary[e.kamar].entries.push(e);
@@ -1226,7 +1227,7 @@ function getKamarSummaryKos() {
 function getKamarSummaryToken() {
   const summary = {};
   for (let i = 1; i <= getDoorCount(); i++) summary[i] = { total: 0, entries: [] };
-  data.token_entries.forEach(e => {
+  data.token_entries.filter(isCurrentPeriod).forEach(e => {
     if (summary[e.kamar]) {
       summary[e.kamar].total += Number(e.jumlah || 0);
       summary[e.kamar].entries.push(e);
@@ -1462,8 +1463,10 @@ const tenantRouteItems = [
   { path: '/token/tambah', label: '＋ Isi Token' },
   { path: '/export', label: '📤 Export' }
 ];
+const TOKEN_ROUTES = ['/token', '/token/tambah'];
 function getRouteItems() {
-  return userRole === 'tenant' ? tenantRouteItems : routeItems;
+  const items = userRole === 'tenant' ? tenantRouteItems : routeItems;
+  return isSharedToken() ? items : items.filter(item => !TOKEN_ROUTES.includes(item.path));
 }
 
 function rebuildNav() {
@@ -1474,6 +1477,7 @@ function rebuildNav() {
     const button = document.createElement('button');
     button.type = 'button'; button.textContent = item.label;
     button.dataset.route = item.path;
+    button.classList.toggle('active', item.path === routeFromHash());
     button.addEventListener('click', () => navigate(item.path));
     nav.appendChild(button);
   });
@@ -1504,12 +1508,22 @@ function buildPageLayout() {
   const tokenList = makePage('/token', 'Token Listrik', 'Lihat riwayat dan status pengisian token listrik.');
   const tokenAdd = makePage('/token/tambah', 'Input Token Listrik', 'Catat kontribusi pengisian token dari penghuni.');
   const exportPage = makePage('/export', 'Export & Share', 'Salin laporan untuk dibagikan ke grup atau unduh salinan JSON.');
-  const settingsPage = makePage('/pengaturan-kos', 'Pengaturan Kos', 'Atur jumlah pintu, informasi pembayaran, dan harga kos Anda.');
+  const settingsPage = makePage('/pengaturan-kos', 'Pengaturan Kos', 'Atur kode undangan, jumlah pintu, mode token, informasi pembayaran, dan harga kos Anda.');
   settingsPage.insertAdjacentHTML('beforeend', `
+    <div class="card">
+      <div class="card-title">🔑 Kode Undangan Penyewa</div>
+      <p class="info-text">Bagikan kode ini ke penyewa. Penyewa memasukkan kode dan nomor pintunya saat pertama kali masuk.</p>
+      <div id="settings-invite-code" style="font-size:28px;font-weight:800;letter-spacing:4px;text-align:center;padding:8px 0;cursor:pointer;" onclick="copyInviteCode()" title="Klik untuk menyalin">—</div>
+      <div class="page-actions"><button type="button" class="btn btn-sm" onclick="copyInviteCode()">Salin Kode</button><button type="button" class="btn btn-sm btn-warning" onclick="regenerateInviteCode()">Buat Kode Baru</button></div>
+    </div>
     <div class="card">
       <form id="kos-settings-form" onsubmit="return saveKosSettings(event)">
         <div class="form-row">
-          <div class="form-group"><label for="settings-jumlah-pintu">Jumlah Pintu (1–50)</label><input type="number" id="settings-jumlah-pintu" min="1" max="50" step="1" required></div>
+          <div class="form-group"><label for="settings-nama-kos">Nama Kos</label><input type="text" id="settings-nama-kos" maxlength="120" required></div>
+          <div class="form-group"><label for="settings-kota">Kota</label><input type="text" id="settings-kota" maxlength="80"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label for="settings-jumlah-pintu">Jumlah Pintu (1–500)</label><input type="number" id="settings-jumlah-pintu" min="1" max="500" step="1" required></div>
           <div class="form-group"><label for="settings-harga-kos">Harga Kos per Pintu / Bulan (Rp)</label><input type="number" id="settings-harga-kos" min="0" step="1000" required></div>
         </div>
         <div class="form-row">
@@ -1517,7 +1531,8 @@ function buildPageLayout() {
           <div class="form-group"><label for="settings-rekening-no">Nomor Rekening</label><input type="text" id="settings-rekening-no" maxlength="40" inputmode="numeric" placeholder="Nomor rekening kos"></div>
         </div>
         <div class="form-group"><label for="settings-rekening-nama">Nama Pemilik Rekening</label><input type="text" id="settings-rekening-nama" maxlength="120" placeholder="Nama pada rekening"></div>
-        <div class="form-group"><label for="settings-nomor-token">Nomor Meter Token PLN (20 digit)</label><input type="text" id="settings-nomor-token" inputmode="numeric" minlength="20" maxlength="20" pattern="[0-9]{20}" placeholder="Masukkan 20 digit nomor meter" required></div>
+        <div class="form-group"><label for="settings-mode-token">Listrik / Token PLN</label><select id="settings-mode-token" onchange="updateSettingsTokenField()"><option value="bersama">1 meter token dipakai bersama (biaya dibagi ke penyewa)</option><option value="per_pintu">Setiap pintu punya token sendiri (penyewa hanya bayar kos)</option></select></div>
+        <div class="form-group"><label for="settings-nomor-token">Nomor Meter / ID Pelanggan PLN</label><input type="text" id="settings-nomor-token" inputmode="numeric" minlength="11" maxlength="20" pattern="[0-9]{11,20}" placeholder="11–20 digit angka"></div>
         <div id="kos-settings-message" class="info-text" role="status" aria-live="polite" style="margin-bottom:10px;"></div>
         <button type="submit" class="btn btn-primary" style="width:100%;">Simpan Pengaturan Kos</button>
       </form>
@@ -1525,6 +1540,8 @@ function buildPageLayout() {
   const deletePage = makePage('/delete', 'Konfirmasi Penghapusan', 'Tinjau data terlebih dahulu sebelum menghapus.');
   pages['/delete'] = deletePage;
 
+  kosCards[0].classList.add('owner-only'); kosCards[1].classList.add('owner-only');
+  tokenCards.forEach(card => card.classList.add('token-feature'));
   dashboard.append(kosCards[0], tokenCards[0], kosCards[1], tokenCards[1]);
   const ownerCard = document.getElementById('owner-summary-card');
   const tenantCard = document.getElementById('tenant-personal-card');
@@ -1601,6 +1618,9 @@ function renderRoute(forcedRoute) {
     route = '/dashboard';
     if (!forcedRoute && location.hash !== '#/dashboard') history.replaceState(null, '', '#/dashboard');
   }
+  if ((TOKEN_ROUTES.includes(route) || route.startsWith('/token/')) && !isSharedToken()) {
+    route = '/dashboard';
+  }
   if (route === '/pengaturan-kos' && userRole !== 'owner') {
     route = '/dashboard';
     showToast('Pengaturan kos hanya tersedia untuk pemilik kos.');
@@ -1672,11 +1692,17 @@ function startCreate(type) {
     document.getElementById('form-kos').reset();
     document.getElementById('kos-jumlah').value = getMonthlyRent();
     document.getElementById('kos-tanggal').value = new Date().toISOString().split('T')[0];
+    document.getElementById('kos-bulan').value = getCurrentBulan().charAt(0).toUpperCase() + getCurrentBulan().slice(1);
     setKosSubmitMode(false);
   } else {
     document.getElementById('form-token').reset();
     document.getElementById('token-tanggal').value = new Date().toISOString().split('T')[0];
     setTokenSubmitMode(false);
+  }
+  if (userRole === 'tenant' && userProfile) {
+    const prefix = type === 'kos' ? 'kos' : 'token';
+    if (userProfile.kamar) document.getElementById(prefix + '-kamar').value = userProfile.kamar;
+    if (userProfile.full_name) document.getElementById(prefix + '-nama').value = userProfile.full_name;
   }
 }
 function openEditor(type, id) {
@@ -1813,12 +1839,14 @@ function copyRek() {
 }
 
 async function resetData() {
-  if (!confirm('Yakin hapus SEMUA data kos & token periode ini? Ini akan terhapus untuk SEMUA teman.')) return;
+  if (!confirm('Yakin hapus SEMUA data kos & token periode ini? Data akan terhapus untuk seluruh anggota kos ini.')) return;
   try {
     const periode = getCurrentPeriode();
-    await api('/kos_entries?periode=eq.' + encodeURIComponent(periode), { method:'DELETE' });
-    await api('/token_entries?periode=eq.' + encodeURIComponent(periode), { method:'DELETE' });
-    await loadData(); showToast('🗑️ Semua data periode ini direset untuk semua pengguna.');
+    if (!userKosId) return;
+    const scope = '&kos_id=eq.' + encodeURIComponent(userKosId);
+    await api('/kos_entries?periode=eq.' + encodeURIComponent(periode) + scope, { method:'DELETE' });
+    await api('/token_entries?periode=eq.' + encodeURIComponent(periode) + scope, { method:'DELETE' });
+    await loadData(); showToast('🗑️ Semua data periode ini direset untuk kos Anda.');
   } catch(err) { console.error(err); showToast('❌ Gagal mereset data.'); }
 }
 
@@ -1842,8 +1870,8 @@ function renderAll() {
 function updateRoleBasedUI() {
   const ownerCard = document.getElementById('owner-summary-card');
   const tenantCard = document.getElementById('tenant-personal-card');
-  const tokenPurchaseCard = document.getElementById('owner-token-purchase-card');
-  if (tokenPurchaseCard) tokenPurchaseCard.classList.toggle('hidden', userRole !== 'owner');
+  document.querySelectorAll('.owner-only').forEach(el => el.classList.toggle('hidden', userRole !== 'owner' && !isAdmin));
+  document.querySelectorAll('.token-feature').forEach(el => el.classList.toggle('hidden', !activeKos || !isSharedToken()));
   if (!ownerCard || !tenantCard) return;
   ownerCard.style.display = (userRole === 'owner') ? '' : 'none';
   tenantCard.style.display = (userRole === 'tenant') ? '' : 'none';
@@ -1851,38 +1879,55 @@ function updateRoleBasedUI() {
   if (userRole === 'tenant') renderTenantDashboard();
 }
 
+function tenantKosPaidThisMonth(profile) {
+  return data.kos_entries.filter(isCurrentPeriod).some(e => e.user_id === profile.id || (profile.kamar && Number(e.kamar) === Number(profile.kamar)));
+}
+
+function unpaidTagihanFor(userId) {
+  return (data.tagihan_token || []).filter(t => t.user_id === userId && t.status === 'belum_lunas');
+}
+
 function renderOwnerSummary() {
   const container = document.getElementById('owner-tenant-summary');
   if (!container) return;
+  const profiles = data.tenant_profiles || [];
+  const unpaidTagihan = (data.tagihan_token || []).filter(t => t.status === 'belum_lunas');
   const paymentStatus = document.getElementById('owner-payment-status');
   if (paymentStatus) {
-    paymentStatus.textContent = data.unpaid_token_count === null
-      ? 'Status Pembayaran: data tagihan belum tersedia'
-      : 'Status Pembayaran: Belum lunas ' + data.unpaid_token_count + ' pintu';
+    const unpaidKos = profiles.filter(p => !tenantKosPaidThisMonth(p)).length;
+    paymentStatus.textContent = 'Bulan ini: ' + unpaidKos + ' penyewa belum bayar kos'
+      + (isSharedToken() ? ' · ' + unpaidTagihan.length + ' tagihan token belum lunas' : '');
   }
-  const profiles = data.tenant_profiles || [];
   if (profiles.length === 0) {
-    container.innerHTML = '<div class="empty-state"><div class="icon">👤</div><p>Belum ada penyewa yang bergabung</p><p style="font-size:11px;">Bagikan kode undangan untuk menambah penyewa</p></div>';
+    container.innerHTML = '<div class="empty-state"><div class="icon">👤</div><p>Belum ada penyewa yang bergabung</p><p style="font-size:11px;">Bagikan kode undangan <strong>' + escapeHtml(activeKos?.kode_undangan || '') + '</strong> ke penyewa (menu Pengaturan Kos).</p></div>';
     return;
   }
-  const kosSummary = getKamarSummaryKos();
-  const tokenSummary = getKamarSummaryToken();
-  let html = '<table><thead><tr><th>Nama</th><th>Role</th><th>Kos</th><th>Token</th></tr></thead><tbody>';
+  const shared = isSharedToken();
+  let html = '<div class="table-scroll"><table><thead><tr><th>Pintu</th><th>Nama</th><th>Kos Bulan Ini</th>' + (shared ? '<th>Tagihan Token</th>' : '') + '<th>Aksi</th></tr></thead><tbody>';
   profiles.forEach(p => {
-    const kamarLabel = p.kamar ? 'Pintu ' + p.kamar : '-';
-    const kosPaid = data.kos_entries.some(e => e.user_id === p.id);
-    const tokenPaid = data.token_entries.some(e => e.user_id === p.id);
-    html += '<tr><td>' + escapeHtml(p.full_name || p.id?.slice(0,8) || '?') + '</td><td>' + escapeHtml(p.role || '-') + '</td>';
+    const id = escapeHtml(p.id);
+    const kosPaid = tenantKosPaidThisMonth(p);
+    const tagihan = unpaidTagihanFor(p.id);
+    const tagihanTotal = tagihan.reduce((s, t) => s + Number(t.jumlah || 0), 0);
+    html += '<tr><td>' + (p.kamar ? 'Pintu ' + escapeHtml(p.kamar) : '-') + '</td>';
+    html += '<td>' + escapeHtml(p.full_name || 'Penyewa') + (p.whatsapp ? '<br><small>' + escapeHtml(p.whatsapp) + '</small>' : '') + '</td>';
     html += '<td>' + (kosPaid ? '✅ Lunas' : '❌ Belum') + '</td>';
-    html += '<td>' + (tokenPaid ? '✅ Sudah' : '❌ Belum') + '</td></tr>';
+    if (shared) {
+      html += '<td>' + (tagihan.length
+        ? '❌ ' + formatRupiah(tagihanTotal) + tagihan.map(t => ' <button class="btn btn-success btn-sm" onclick="confirmTagihanPaid(\'' + escapeHtml(t.id) + '\')">Konfirmasi ' + formatRupiah(t.jumlah) + '</button>').join('')
+        : '✅ Tidak ada') + '</td>';
+    }
+    html += '<td><div class="row-actions"><button class="btn btn-sm" onclick="ownerSetTenantKamar(\'' + id + '\')">Ubah Pintu</button><button class="btn btn-sm btn-danger" onclick="ownerRemoveTenant(\'' + id + '\')">Keluarkan</button></div></td></tr>';
   });
-  html += '</tbody></table>';
-  const totalKos = data.kos_entries.reduce((s, e) => s + Number(e.jumlah || 0), 0);
-  const totalToken = data.token_entries.reduce((s, e) => s + Number(e.jumlah || 0), 0);
+  html += '</tbody></table></div>';
+  const totalKos = data.kos_entries.filter(isCurrentPeriod).reduce((s, e) => s + Number(e.jumlah || 0), 0);
   html += '<div class="stats-grid" style="margin-top:12px;">';
-  html += '<div class="stat-box blue"><div class="stat-value">' + formatRupiah(totalKos) + '</div><div class="stat-label">Total Kos Masuk</div></div>';
-  html += '<div class="stat-box teal"><div class="stat-value">' + formatRupiah(totalToken) + '</div><div class="stat-label">Total Token Masuk</div></div>';
-  html += '<div class="stat-box green"><div class="stat-value">' + profiles.length + '</div><div class="stat-label">Jumlah Penyewa</div></div>';
+  html += '<div class="stat-box blue"><div class="stat-value">' + formatRupiah(totalKos) + '</div><div class="stat-label">Kos Masuk Bulan Ini</div></div>';
+  if (shared) {
+    const totalTagihan = unpaidTagihan.reduce((s, t) => s + Number(t.jumlah || 0), 0);
+    html += '<div class="stat-box red"><div class="stat-value">' + formatRupiah(totalTagihan) + '</div><div class="stat-label">Tagihan Token Belum Lunas</div></div>';
+  }
+  html += '<div class="stat-box green"><div class="stat-value">' + profiles.length + ' / ' + getDoorCount() + '</div><div class="stat-label">Penyewa / Pintu</div></div>';
   html += '</div>';
   container.innerHTML = html;
 }
@@ -1890,50 +1935,42 @@ function renderOwnerSummary() {
 function renderTenantDashboard() {
   const container = document.getElementById('tenant-personal-summary');
   if (!container) return;
-  const myKos = data.kos_entries.filter(e => e.user_id === currentUserUuid);
+  const myKamar = userProfile?.kamar ? Number(userProfile.kamar) : null;
+  const mine = e => e.user_id === currentUserUuid || (myKamar && Number(e.kamar) === myKamar);
+  const myKos = data.kos_entries.filter(mine);
   const myToken = data.token_entries.filter(e => e.user_id === currentUserUuid);
-  const kosPaid = myKos.length > 0;
-  const kosTotal = myKos.reduce((s, e) => s + Number(e.jumlah || 0), 0);
-  const tokenLunas = myToken.filter(e => e.status !== 'belum_lunas');
-  const tokenBelum = myToken.filter(e => e.status === 'belum_lunas');
-  const tokenTotalLunas = tokenLunas.reduce((s, e) => s + Number(e.jumlah || 0), 0);
-  const tokenTotalBelum = tokenBelum.reduce((s, e) => s + Number(e.jumlah || 0), 0);
-  let html = '<div class="stats-grid">';
-  html += '<div class="stat-box ' + (kosPaid ? 'green' : 'red') + '"><div class="stat-value">' + (kosPaid ? '✅ Lunas' : '❌ Belum') + '</div><div class="stat-label">Status Kos</div></div>';
-  html += '<div class="stat-box blue"><div class="stat-value">' + formatRupiah(kosTotal) + '</div><div class="stat-label">Total Kos Dibayar</div></div>';
-  html += '<div class="stat-box teal"><div class="stat-value">' + formatRupiah(tokenTotalLunas) + '</div><div class="stat-label">Token Sudah Bayar</div></div>';
+  const kosPaid = myKos.some(isCurrentPeriod);
+  const kosTotal = myKos.filter(isCurrentPeriod).reduce((s, e) => s + Number(e.jumlah || 0), 0);
+  const tagihanToken = unpaidTagihanFor(currentUserUuid);
+  const tagihanTotal = tagihanToken.reduce((s, t) => s + Number(t.jumlah || 0), 0);
+  let html = '<p class="info-text" style="margin-bottom:8px;">' + escapeHtml(activeKos?.nama_kos || '') + (myKamar ? ' · <strong>Pintu ' + myKamar + '</strong>' : '') + '</p>';
+  html += '<div class="stats-grid">';
+  html += '<div class="stat-box ' + (kosPaid ? 'green' : 'red') + '"><div class="stat-value">' + (kosPaid ? '✅ Lunas' : '❌ Belum') + '</div><div class="stat-label">Status Kos Bulan Ini</div></div>';
+  html += '<div class="stat-box blue"><div class="stat-value">' + formatRupiah(kosTotal) + '</div><div class="stat-label">Kos Dibayar Bulan Ini</div></div>';
+  if (isSharedToken()) html += '<div class="stat-box ' + (tagihanTotal ? 'red' : 'teal') + '"><div class="stat-value">' + formatRupiah(tagihanTotal) + '</div><div class="stat-label">Tagihan Token Belum Lunas</div></div>';
   html += '</div>';
-  const tagihanToken = data.tagihan_token || [];
-  tagihanToken.forEach(tagihan => {
-    html += '<div class="info-text" style="background:#fef3c7;color:#92400e;padding:10px;border-radius:8px;margin-top:10px;">';
-    html += 'Tagihan Token ' + escapeHtml(tagihan.periode || '') + ': <strong>' + formatRupiah(tagihan.jumlah) + '</strong> - Belum Lunas';
-    html += '<div style="margin-top:8px;"><button class="btn btn-success btn-sm" onclick="markTagihanTokenPaid(\'' + escapeHtml(tagihan.id) + '\')">Saya Sudah Bayar</button></div></div>';
-  });
-  if (tokenBelum.length > 0) {
-    html += '<div class="info-text" style="background:#fef3c7;color:#b45309;padding:10px;border-radius:8px;margin-top:10px;">';
-    html += '⚠️ Ada ' + tokenBelum.length + ' tagihan token belum lunas. Total: <strong>' + formatRupiah(tokenTotalBelum) + '</strong></div>';
-    html += '<table style="margin-top:8px;"><thead><tr><th>Tanggal</th><th>Jumlah</th><th>Status</th><th>Aksi</th></tr></thead><tbody>';
-    tokenBelum.forEach(e => {
-      html += '<tr><td>' + formatTanggal(e.tanggal) + '</td><td style="font-weight:700;color:#2563eb">' + formatRupiah(e.jumlah) + '</td>';
-      html += '<td style="color:#dc2626;font-weight:700;">Belum Lunas</td>';
-      html += '<td><button class="btn btn-success btn-sm" onclick="markTokenPaid(\'' + e.id + '\')">✅ Tandai Lunas</button></td></tr>';
+  if (isSharedToken()) {
+    tagihanToken.forEach(tagihan => {
+      html += '<div class="info-text" style="background:#fef3c7;color:#92400e;padding:10px;border-radius:8px;margin-top:10px;">';
+      html += 'Tagihan Token ' + escapeHtml(tagihan.periode || '') + ': <strong>' + formatRupiah(tagihan.jumlah) + '</strong> - Belum Lunas';
+      html += '<div style="margin-top:8px;"><button class="btn btn-success btn-sm" onclick="markTagihanTokenPaid(\'' + escapeHtml(tagihan.id) + '\')">Saya Sudah Bayar</button></div></div>';
     });
-    html += '</tbody></table>';
   }
   if (!kosPaid) {
     const bankDetails = [getKosBankName(), getKosBankNumber(), getKosBankHolder()].filter(Boolean).join(' ');
     html += '<div class="info-text" style="background:#fef2f2;color:#dc2626;padding:10px;border-radius:8px;margin-top:10px;">⚠️ Kos bulan ini belum dibayar. Bayar ' + formatRupiah(getMonthlyRent()) + (bankDetails ? ' ke ' + escapeHtml(bankDetails) : '') + '.</div>';
   }
   if (myKos.length > 0 || myToken.length > 0) {
-    html += '<div style="margin-top:12px;"><strong>Riwayat Pembayaran Saya:</strong></div><table><thead><tr><th>Tanggal</th><th>Jenis</th><th>Jumlah</th><th>Status</th></tr></thead><tbody>';
+    html += '<div style="margin-top:12px;"><strong>Riwayat Pembayaran Saya:</strong></div><div class="table-scroll"><table><thead><tr><th>Tanggal</th><th>Jenis</th><th>Periode</th><th>Jumlah</th></tr></thead><tbody>';
     [...myKos.map(e => ({...e, jenis: 'Kos'})), ...myToken.map(e => ({...e, jenis: 'Token'}))]
       .sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal))
+      .slice(0, 24)
       .forEach(e => {
-        const statusLabel = e.status === 'belum_lunas' ? '<span style="color:#dc2626;">Belum Lunas</span>' : '<span style="color:#059669;">Lunas</span>';
-        html += '<tr><td>' + formatTanggal(e.tanggal) + '</td><td>' + e.jenis + '</td><td style="font-weight:700;color:#2563eb">' + formatRupiah(e.jumlah) + '</td><td>' + statusLabel + '</td></tr>';
+        html += '<tr><td>' + formatTanggal(e.tanggal) + '</td><td>' + e.jenis + '</td><td>' + escapeHtml(e.periode || '') + '</td><td style="font-weight:700;color:#2563eb">' + formatRupiah(e.jumlah) + '</td></tr>';
       });
-    html += '</tbody></table>';
+    html += '</tbody></table></div>';
   }
+  html += '<div class="page-actions" style="margin-top:12px;"><button class="btn btn-sm btn-danger" onclick="leaveKos()">Keluar dari Kos Ini</button></div>';
   container.innerHTML = html;
 }
 
@@ -1963,8 +2000,66 @@ async function markTagihanTokenPaid(id) {
   }
 }
 
+async function confirmTagihanPaid(id) {
+  try {
+    await api('/tagihan_token?id=eq.' + encodeURIComponent(id) + '&kos_id=eq.' + encodeURIComponent(userKosId), {
+      method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify({ status: 'lunas' })
+    });
+    showToast('✅ Tagihan token dikonfirmasi lunas.');
+    await loadData();
+  } catch (err) {
+    console.error(err);
+    showToast('❌ Gagal mengonfirmasi tagihan. Pastikan migrasi terbaru sudah dijalankan.');
+  }
+}
+
+async function regenerateInviteCode() {
+  if (userRole !== 'owner') return;
+  if (!confirm('Buat kode undangan baru? Kode lama tidak bisa dipakai lagi (penyewa yang sudah bergabung tidak terpengaruh).')) return;
+  try {
+    const code = await api('/rpc/regenerate_invite_code', { method: 'POST', body: '{}' });
+    await refreshActiveKos();
+    showToast('✅ Kode undangan baru: ' + code);
+  } catch (err) { showToast('❌ ' + err.message); }
+}
+
+async function ownerSetTenantKamar(tenantId) {
+  const tenant = (data.tenant_profiles || []).find(p => p.id === tenantId);
+  const input = prompt('Nomor pintu baru untuk ' + (tenant?.full_name || 'penyewa') + ' (1–' + getDoorCount() + '):', tenant?.kamar || '');
+  if (input === null) return;
+  const kamar = Number(input);
+  if (!Number.isInteger(kamar) || kamar < 1 || kamar > getDoorCount()) { showToast('❌ Nomor pintu harus 1 sampai ' + getDoorCount() + '.'); return; }
+  try {
+    await api('/rpc/owner_set_tenant_kamar', { method: 'POST', body: JSON.stringify({ target_user_id: tenantId, input_kamar: kamar }) });
+    showToast('✅ Pintu penyewa diperbarui.');
+    await loadData();
+  } catch (err) { showToast('❌ ' + err.message); }
+}
+
+async function ownerRemoveTenant(tenantId) {
+  const tenant = (data.tenant_profiles || []).find(p => p.id === tenantId);
+  if (!confirm('Keluarkan ' + (tenant?.full_name || 'penyewa ini') + ' dari kos? Riwayat pembayaran tetap tersimpan.')) return;
+  try {
+    await api('/rpc/owner_remove_tenant', { method: 'POST', body: JSON.stringify({ target_user_id: tenantId }) });
+    showToast('✅ Penyewa dikeluarkan dari kos.');
+    await loadData();
+  } catch (err) { showToast('❌ ' + err.message); }
+}
+
+async function leaveKos() {
+  if (!confirm('Keluar dari kos ini? Anda bisa bergabung ke kos lain dengan kode undangan baru.')) return;
+  try {
+    await api('/rpc/leave_kos', { method: 'POST', body: '{}' });
+    userProfile = null; userKosId = null; userRole = null; activeKos = null;
+    data = { kos_entries: [], token_entries: [], tenant_profiles: [], tagihan_token: [], periode: getCurrentPeriode() };
+    setAppVisibility(true, currentUserEmail);
+    switchOnboardingTab('tenant');
+    showToast('Anda sudah keluar dari kos.');
+  } catch (err) { showToast('❌ ' + err.message); }
+}
+
 function splitAmountByDoor(total, doors) {
-  if (!Number.isInteger(total) || total <= 0 || !Number.isInteger(doors) || doors < 1 || doors > 50) {
+  if (!Number.isInteger(total) || total <= 0 || !Number.isInteger(doors) || doors < 1 || doors > MAX_JUMLAH_PINTU) {
     throw new Error('Total dan jumlah pintu tidak valid.');
   }
   const amount = Math.floor(total / doors);
@@ -1972,139 +2067,68 @@ function splitAmountByDoor(total, doors) {
   return Array.from({ length: doors }, (_, index) => amount + (index < remainder ? 1 : 0));
 }
 
-function updateSharedTokenPreview() {
-  const totalInput = document.getElementById('shared-token-total');
-  const preview = document.getElementById('shared-token-preview');
-  if (!preview) return;
-  const total = Number(totalInput?.value || 0);
+// Total token dibagi rata per pintu; bagian satu pintu dibagi lagi ke penyewa di pintu itu.
+// Bagian pintu kosong menjadi tanggungan pemilik.
+function buildTokenSplit(total) {
   const doors = getDoorCount();
-  if (!Number.isInteger(total) || total <= 0 || doors < 1) {
-    preview.textContent = 'Masukkan total rupiah token untuk melihat pembagian per pintu.';
-    return;
-  }
   const shares = splitAmountByDoor(total, doors);
-  const lowest = Math.min(...shares);
-  const highest = Math.max(...shares);
-  preview.textContent = lowest !== highest
-    ? 'Total ' + formatRupiah(total) + ' dibagi ke ' + doors + ' pintu: ' + formatRupiah(lowest) + '–' + formatRupiah(highest) + ' per pintu (sisa rupiah dibagi ke beberapa pintu).'
-    : formatRupiah(total) + ' ÷ ' + doors + ' pintu = ' + formatRupiah(lowest) + ' per pintu.';
-}
-
-async function submitSharedTokenPurchase(e) {
-  e.preventDefault();
-  const total = Number(document.getElementById('shared-token-total').value);
-  const doors = getDoorCount();
-  if (userRole !== 'owner' || !userKosId) {
-    showToast('❌ Hanya pemilik kos yang dapat membeli dan membagi token bersama.');
-    return false;
-  }
-  if (!Number.isInteger(total) || total <= 0 || doors < 1 || doors > 50) {
-    showToast('❌ Masukkan total rupiah token yang valid.');
-    return false;
-  }
-  const shares = splitAmountByDoor(total, doors);
-  const date = new Date().toISOString().slice(0, 10);
-  const rows = Array.from({ length: doors }, (_, index) => ({
-    nama: 'Token Bersama',
-    kamar: index + 1,
-    jumlah: shares[index],
-    nomor_token: getKosTokenNumber() || null,
-    tanggal: date,
-    periode: getCurrentPeriode(),
-    status: 'belum_isi',
-    user_id: null,
-    kos_id: userKosId
-  }));
-  try {
-    await api('/token_entries', {
-      method: 'POST',
-      headers: { 'Prefer': 'return=minimal' },
-      body: JSON.stringify(rows)
-    });
-    document.getElementById('form-shared-token-purchase').reset();
-    updateSharedTokenPreview();
-    await loadData();
-    showToast('✅ Token ' + formatRupiah(total) + ' dibagi ke ' + doors + ' pintu.');
-  } catch (err) {
-    console.error('Gagal menyimpan pembelian token bersama:', err);
-    showToast('❌ Gagal menyimpan pembagian token. Pastikan Anda pemilik kos dan database sudah memakai RLS isolasi kos.');
-  }
-  return false;
+  const tenants = (data.tenant_profiles || []).filter(p => p.role === 'tenant' && p.kamar >= 1 && p.kamar <= doors);
+  const byDoor = {};
+  tenants.forEach(t => { (byDoor[t.kamar] = byDoor[t.kamar] || []).push(t); });
+  const bills = [];
+  let ownerShare = 0;
+  shares.forEach((share, index) => {
+    const occupants = byDoor[index + 1] || [];
+    if (!occupants.length) { ownerShare += share; return; }
+    const parts = splitAmountByDoor(share, occupants.length);
+    occupants.forEach((tenant, i) => { if (parts[i] > 0) bills.push({ tenant, kamar: index + 1, jumlah: parts[i] }); });
+  });
+  return { doors, perDoor: shares, bills, ownerShare };
 }
 
 function updateTokenSplitPreview() {
-  const jumlah = Number(document.getElementById('split-jumlah')?.value || 0);
-  const pintu = Number(document.getElementById('split-pintu')?.value || 0);
   const preview = document.getElementById('split-preview');
   if (!preview) return;
-  if (!Number.isInteger(jumlah) || jumlah <= 0 || !Number.isInteger(pintu) || pintu <= 0) {
-    preview.textContent = 'Bagian per pintu: —';
+  const total = Number(document.getElementById('split-jumlah')?.value || 0);
+  if (!Number.isInteger(total) || total <= 0) {
+    preview.textContent = 'Total dibagi rata ke ' + getDoorCount() + ' pintu. Bagian pintu kosong ditanggung pemilik.';
     return;
   }
-  const dasar = Math.floor(jumlah / pintu);
-  const sisa = jumlah % pintu;
-  preview.textContent = sisa
-    ? 'Bagian per pintu: ' + formatRupiah(dasar) + '–' + formatRupiah(dasar + 1) + ' (selisih pembulatan)'
-    : 'Bagian per pintu: ' + formatRupiah(dasar);
+  const split = buildTokenSplit(total);
+  const low = Math.min(...split.perDoor), high = Math.max(...split.perDoor);
+  preview.textContent = formatRupiah(total) + ' ÷ ' + split.doors + ' pintu = ' + formatRupiah(low) + (low !== high ? '–' + formatRupiah(high) : '')
+    + ' per pintu · ' + split.bills.length + ' tagihan penyewa' + (split.ownerShare ? ' · pintu kosong ' + formatRupiah(split.ownerShare) : '');
 }
 
 async function submitAutoSplitToken(e) {
   e.preventDefault();
-  const jumlah = Number(document.getElementById('split-jumlah').value);
-  const jumlahPintu = Number(document.getElementById('split-pintu').value);
-  if (!Number.isInteger(jumlah) || jumlah <= 0 || !Number.isInteger(jumlahPintu) || jumlahPintu <= 0) {
-    showToast('❌ Isi jumlah token dan jumlah pintu yang valid.');
-    return false;
-  }
+  const total = Number(document.getElementById('split-jumlah').value);
   if (userRole !== 'owner' || !userKosId) { showToast('❌ Hanya pemilik kos yang dapat membagi token.'); return false; }
-  if (jumlahPintu !== getDoorCount()) {
-    showToast('❌ Jumlah pintu harus sesuai pengaturan kos (' + getDoorCount() + ').');
-    return false;
-  }
-
-  const profiles = data.tenant_profiles || [];
-  const tenants = profiles.filter(p => p.role === 'tenant' && String(p.kos_id) === String(userKosId));
-  if (tenants.length === 0) { showToast('❌ Belum ada penyewa untuk dibagi tagihan.'); return false; }
-  if (tenants.length !== jumlahPintu) {
-    showToast('❌ Jumlah pintu harus sama dengan jumlah penyewa terdaftar (' + tenants.length + ').');
-    return false;
-  }
-
+  if (!isSharedToken()) { showToast('❌ Kos ini memakai token per pintu.'); return false; }
+  if (!Number.isInteger(total) || total <= 0) { showToast('❌ Isi total harga token yang valid.'); return false; }
+  const split = buildTokenSplit(total);
+  if (!split.bills.length) { showToast('❌ Belum ada penyewa dengan nomor pintu untuk ditagih.'); return false; }
   try {
     const periode = getCurrentTagihanPeriode();
-    const perPintu = Math.floor(jumlah / jumlahPintu);
-    const sisa = jumlah % jumlahPintu;
-    const tagihan = tenants.map((tenant, index) => ({
-      kos_id: userKosId,
-      user_id: tenant.id,
-      jumlah: perPintu + (index < sisa ? 1 : 0),
-      periode,
-      status: 'belum_lunas'
-    }));
     await api('/tagihan_token', {
       method: 'POST',
       headers: { 'Prefer': 'return=minimal' },
-      body: JSON.stringify(tagihan)
+      body: JSON.stringify(split.bills.map(bill => ({ kos_id: userKosId, user_id: bill.tenant.id, kamar: bill.kamar, jumlah: bill.jumlah, periode, status: 'belum_lunas' })))
     });
-
     const resultDiv = document.getElementById('split-result');
     if (resultDiv) {
-      let html = '<div class="info-text" style="background:#ecfdf5;color:#059669;padding:10px;border-radius:8px;">';
-      html += '✅ Token ' + formatRupiah(jumlah) + ' dibagi ke ' + jumlahPintu + ' pintu.';
-      html += '<br>Tagihan per orang: <strong>' + formatRupiah(perPintu) + (sisa ? '–' + formatRupiah(perPintu + 1) : '') + '</strong>';
-      html += '</div>';
-      html += '<table style="margin-top:8px;"><thead><tr><th>Nama</th><th>Tagihan</th><th>Status</th></tr></thead><tbody>';
-      tenants.forEach((tenant, index) => {
-        const jumlahOrang = perPintu + (index < sisa ? 1 : 0);
-        html += '<tr><td>' + escapeHtml(tenant.full_name || tenant.id?.slice(0,8) || '?') + '</td><td>' + formatRupiah(jumlahOrang) + '</td><td style="color:#dc2626;font-weight:700;">Belum Lunas</td></tr>';
+      let html = '<div class="info-text" style="background:#ecfdf5;color:#059669;padding:10px;border-radius:8px;">✅ Token ' + formatRupiah(total) + ' dibagi ke ' + split.doors + ' pintu.'
+        + (split.ownerShare ? '<br>Bagian pintu kosong (ditanggung pemilik): <strong>' + formatRupiah(split.ownerShare) + '</strong>' : '') + '</div>';
+      html += '<table style="margin-top:8px;"><thead><tr><th>Pintu</th><th>Nama</th><th>Tagihan</th></tr></thead><tbody>';
+      split.bills.forEach(bill => {
+        html += '<tr><td>Pintu ' + bill.kamar + '</td><td>' + escapeHtml(bill.tenant.full_name || 'Penyewa') + '</td><td>' + formatRupiah(bill.jumlah) + '</td></tr>';
       });
       html += '</tbody></table>';
       resultDiv.innerHTML = html;
     }
-
     document.getElementById('form-auto-split').reset();
     updateTokenSplitPreview();
-    showToast('✅ Token ' + formatRupiah(jumlah) + ' dibagi rata ke ' + jumlahPintu + ' pintu!');
+    showToast('✅ ' + split.bills.length + ' tagihan token dibuat.');
     await loadData();
   } catch (err) {
     console.error(err);

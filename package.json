@@ -2,7 +2,7 @@
   "name": "buku-kos-token-listrik-online",
   "version": "1.0.0",
   "private": true,
-  "description": "Buku Kos & Token Listrik 7 pintu dengan Supabase",
+  "description": "BukuKosOnline: pencatatan pembayaran kos & token listrik multi-kos dengan Supabase",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
